@@ -1,4 +1,4 @@
-# is
+# fz
 
 [![NPM version](https://img.shields.io/npm/v/@zcorky/fz.svg?style=flat)](https://www.npmjs.com/package/@zcorky/fz)
 [![Coverage Status](https://img.shields.io/coveralls/zcorky/fz.svg?style=flat)](https://coveralls.io/r/zcorky/fz)
@@ -7,7 +7,7 @@
 ![license](https://img.shields.io/github/license/zcorky/fz.svg)
 [![issues](https://img.shields.io/github/issues/zcorky/fz.svg)](https://github.com/zcorky/fz/issues)
 
-> A simple TypeCheck lib
+> A simply http client lib base fetch
 
 ## Install
 
