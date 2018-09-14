@@ -14,7 +14,7 @@
       false
     ],
     "ban": false,
-    "class-name": true,
+    "class-name": false,
     "comment-format": [
       true,
       "check-space"

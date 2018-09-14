@@ -48,17 +48,17 @@ export class fz implements FZ {
     }
   }
 
-  async response(): Promise<Response> {
+  public async response(): Promise<Response> {
     return await this.fetch();
   }
 
-  async text(): Promise<string> {
+  public async text(): Promise<string> {
     return this.getResponse<string>(ResponseTypes.text);
   }
 
-  async json(): Promise<object> {
+  public async json(): Promise<object> {
     (this.fetchOptions as any).headers['accept'] = 'application/json';
-    
+
     return this.getResponse<object>(ResponseTypes.json);
   }
 
@@ -66,11 +66,11 @@ export class fz implements FZ {
   //   return this.getResponse<FormData>(ResponseTypes.formData);
   // }
 
-  async arrayBuffer(): Promise<ArrayBuffer> {
+  public async arrayBuffer(): Promise<ArrayBuffer> {
     return this.getResponse<ArrayBuffer>(ResponseTypes.arrayBuffer);
   }
 
-  async blob(): Promise<Blob> {
+  public async blob(): Promise<Blob> {
     return this.getResponse<Blob>(ResponseTypes.blob);
   }
 
@@ -115,5 +115,3 @@ export class fz implements FZ {
 }
 
 export default fz;
-
-module.exports = fz;

@@ -44,7 +44,7 @@ describe('fz', () => {
         response.end(request.method);
       });
     });
-  
+
     ['get', 'post', 'put', 'patch', 'delete', 'head'].forEach((method) => {
       it(method, async () => {
         expect((await fz[method](server.url).text()).toLowerCase())
