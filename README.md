@@ -22,7 +22,7 @@ $ npm install @zcorky/fz
 import fz from '@zcorky/fz';
 
 (async () => {
-	const json = await ky.post('https://some-api.com', {json: {foo: true}}).json();
+	const json = await fz.post('https://some-api.com', {json: {foo: true}}).json();
 
 	console.log(json);
 	//=> `{data: '🦄'}`
