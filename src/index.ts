@@ -113,3 +113,7 @@ export class fz implements FZ {
     }
   }
 }
+
+export default fz;
+
+module.exports = fz;
