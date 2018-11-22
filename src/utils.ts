@@ -5,7 +5,7 @@ export type TimeoutErrorType = typeof TimeoutError;
 export type HTTPErrorType = typeof HTTPError;
 
 export type Timeout = (promise: Promise<any>, ms: number) => Promise<any>;
-export type Condition = (error) => boolean;
+export type Condition = (error: HTTPErrorType | TimeoutErrorType | Error) => boolean;
 export type Retry = (fn: Function, count: number, condition: Condition) => Promise<any>;
 
 export class TimeoutError extends Error {
@@ -24,21 +24,23 @@ export const timeout: Timeout = (promise, ms) => Promise.race([
 ]);
 
 export class HTTPError extends Error {
-  public response: Response;
+  // public response: Response;
 
-  constructor(response) {
+  constructor(public response: Response) {
     super(response.statusText);
     this.name = 'HTTPError';
-    this.response = response;
+    // this.response = response;
   }
 }
 
-export const retry: Retry = (fn, times = 0, condition) => {
+export type RetryFn = ((...args: any[]) => Promise<any>) | Function;
+
+export const retry: Retry = (fn: RetryFn, times = 0, condition: Condition) => {
   let runtimes = 0;
 
-  const next = async () => {
+  const next = async (): Promise<any> => {
     try {
-      return await fn();
+      return await (fn as (...args: any[]) => Promise<any>)();
     } catch (error) {
       if (condition(error) && runtimes < times ) {
         runtimes++;

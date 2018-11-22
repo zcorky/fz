@@ -1,5 +1,5 @@
 import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from "./types";
-import { timeout, retry, HTTPError, HTTPErrorType, TimeoutErrorType, TimeoutError } from './utils';
+import { timeout, retry, HTTPError, TimeoutError } from './utils';
 export class fz implements FZ {
   // request
   public static get(input: Input, option?: Option): FZ {
@@ -29,7 +29,7 @@ export class fz implements FZ {
   private fetchOptions: Option = {};
 
   constructor(private input: Input, private options: Option) {
-    this.engine = options.engine || window.fetch;
+    this.engine = options.engine || window.fetch as any;
     this.timeout = options.timeout || 10000;
     this.retryCount = options.retry || 0;
     this.hooks = options.hooks || {
@@ -56,10 +56,10 @@ export class fz implements FZ {
     return this.getResponse<string>(ResponseTypes.text);
   }
 
-  public async json(): Promise<object> {
+  public async json<T extends object>(): Promise<T> {
     (this.fetchOptions as any).headers['accept'] = 'application/json';
 
-    return this.getResponse<object>(ResponseTypes.json);
+    return this.getResponse<T>(ResponseTypes.json);
   }
 
   // async formData(): Promise<FormData> {
@@ -87,12 +87,12 @@ export class fz implements FZ {
       }
 
       await this.afterResponse(response);
-      return response.clone()[type]();
+      return (response.clone() as any)[type]();
     });
   }
 
-  private async retry(fn) {
-    return retry(fn, this.retryCount, (error: HTTPErrorType | TimeoutErrorType) => {
+  private async retry(fn: Function) {
+    return retry(fn, this.retryCount, (error) => {
       if (error instanceof HTTPError || error instanceof TimeoutError) {
         return true;
       }
@@ -101,13 +101,13 @@ export class fz implements FZ {
     })
   }
 
-  private async beforeRequest(options) {
+  private async beforeRequest(options: Option) {
     for (const hook of this.hooks.beforeRequest) {
       await hook(options);
     }
   }
 
-  private async afterResponse(response) {
+  private async afterResponse(response: Response) {
     for (const hook of this.hooks.afterResponse) {
       await hook(response);
     }

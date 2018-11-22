@@ -90,11 +90,11 @@ describe('fz', () => {
     // });
 
     it('arrayBuffer', async () => {
-      expect(await fz.get(server.url).arrayBuffer()).to.throw;
+      expect(await fz.get(server.url).arrayBuffer()).to.throw; /* tslint:disable-line */
     });
 
     it('blob', async () => {
-      expect(await fz.get(server.url).blob()).to.throw;
+      expect(await fz.get(server.url).blob()).to.throw; /* tslint:disable-line */
     });
   });
 
@@ -115,7 +115,7 @@ describe('fz', () => {
       try {
         await fz.get(server.url, { timeout: 1, retry: 2 }).text();
       } catch (e) {
-        expect(e instanceof TimeoutError).to.be.true;
+        expect(e instanceof TimeoutError).to.be.equal(true);
       }
     });
 
@@ -125,7 +125,7 @@ describe('fz', () => {
         // console.log('fz: ', { s: r.status, st: r.statusText, ok: r.ok});
         await fz.post(server.url, { json: { code: 400 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Bad Request');
         // const r = e.response;
         // console.log('fz e: ', { s: r.status, st: r.statusText, ok: r.ok});
@@ -136,7 +136,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 403 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Forbidden');
       }
     });
@@ -145,7 +145,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 408 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Request Timeout');
       }
     });
@@ -154,7 +154,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 413 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Payload Too Large');
       }
     });
@@ -163,7 +163,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 429 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Too Many Requests');
       }
     });
@@ -172,7 +172,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 500 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Internal Server Error');
       }
     });
@@ -181,7 +181,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 502 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Bad Gateway');
       }
     });
@@ -190,7 +190,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 503 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Service Unavailable');
       }
     });
@@ -199,7 +199,7 @@ describe('fz', () => {
       try {
         await fz.post(server.url, { json: { code: 504 } }).text();
       } catch (e) {
-        expect(e instanceof HTTPError).to.be.true;
+        expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Gateway Timeout');
       }
     });
@@ -249,7 +249,7 @@ describe('fz', () => {
       }],
       afterResponse: [response => {
         expect(response.status).to.be.equal(200);
-      }]
+      }],
     };
 
     before(async () => {
@@ -289,7 +289,7 @@ describe('fz', () => {
       try {
         await fz.get(server.url, { timeout: 100 }).text();
       } catch (e) {
-        expect(server.spy).to.have.been.called.once;
+        expect(server.spy).to.have.been.called.once; /* tslint:disable-line */
       }
     });
 
@@ -297,7 +297,7 @@ describe('fz', () => {
       try {
         await fz.get(server.url, { timeout: 100, retry: 1 }).text();
       } catch (e) {
-        expect(server.spy).to.have.been.called.twice;
+        expect(server.spy).to.have.been.called.twice; /* tslint:disable-line */
       }
     });
 

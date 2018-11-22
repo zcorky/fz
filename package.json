@@ -29,7 +29,7 @@
     "tslint": "^5.10.0",
     "tslint-eslint-rules": "^5.3.1",
     "tslint-jsdoc-rules": "^0.1.2",
-    "typescript": "^2.8.3"
+    "typescript": "^3.1.6"
   },
   "files": [
     "lib"

@@ -2,7 +2,7 @@ export interface FZ {
   // response
   response(): Promise<Response>
   text(): Promise<string>
-  json(): Promise<object>
+  json<T extends object>(): Promise<T>
   // formData(): Promise<FormData>
   arrayBuffer(): Promise<ArrayBuffer>
   blob(): Promise<Blob>
@@ -11,7 +11,7 @@ export interface FZ {
 export interface Option {
   method?: Method
   credentials?: Credentials
-  headers?: Record<string, string> 
+  headers?: Record<string, string>
   json?: object
   engine?: Fetch
   retry?: number
