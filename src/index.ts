@@ -1,4 +1,4 @@
-import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from "./types";
+import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
 import { timeout, retry, HTTPError, TimeoutError } from './utils';
 export class fz implements FZ {
   // request
@@ -22,6 +22,8 @@ export class fz implements FZ {
     return new fz(input, { ...option, method: 'DELETE' });
   }
 
+  private _response: Response | null;
+
   private engine: Fetch
   private timeout: number;
   private retryCount: number;
@@ -29,8 +31,9 @@ export class fz implements FZ {
   private fetchOptions: Option = {};
 
   constructor(private input: Input, private options: Option) {
-    this.engine = options.engine || window.fetch as any;
-    this.timeout = options.timeout || 10000;
+    this._response = 123 as any;
+    this.engine = options.engine || window.fetch.bind(window) as any;
+    this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
     this.hooks = options.hooks || {
       beforeRequest: [],
@@ -82,6 +85,10 @@ export class fz implements FZ {
   private async getResponse<T>(type: string): Promise<T> {
     return this.retry(async () => {
       const response =  await this.fetch();
+
+      // response
+      this._response = response;
+
       if (!response.ok) {
         throw new HTTPError(response);
       }

@@ -7,6 +7,7 @@
   "author": "Zero",
   "license": "MIT",
   "scripts": {
+    "dev": "tsc -w",
     "build": "npm run clean && tsc",
     "clean": "rimraf -rf lib",
     "test": "NODE_ENV=test nyc mocha test/*.spec.ts --exit --timeout 10000",

@@ -2,11 +2,11 @@
     "compilerOptions": {
         "moduleResolution": "node",
         "module": "commonjs",
-        "target": "es6",
+        "target": "es2018",
         "strictNullChecks": true,
         "noImplicitThis": true,
         "noImplicitAny": false,
-        "noUnusedLocals": true,
+        "noUnusedLocals": false,
         "outDir": "lib",
         "lib": ["es2015", "dom"],
         "declaration": true,
