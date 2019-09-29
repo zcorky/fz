@@ -23,7 +23,7 @@ export class fz implements FZ {
     return new fz(input, { ...option, method: 'DELETE' });
   }
 
-  private _response: Response | null;
+  private _response: Response | null = null;
 
   private engine: Fetch
   private timeout: number;
@@ -32,7 +32,7 @@ export class fz implements FZ {
   private fetchOptions: Option = {};
 
   constructor(private input: Input, private options: Option) {
-    this._response = 123 as any;
+    // this._response = 123 as any; // @TODO should remove
     this.engine = options.engine || isomorphicEngine() as any;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
