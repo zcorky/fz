@@ -1,28 +1,28 @@
 import { add } from '@zcorky/query-string/lib/add';
 import { stringify } from '@zcorky/query-string';
-import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
+import { IFZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
 import { isomorphicEngine, timeout, retry, HTTPError, TimeoutError } from './utils';
 
-export class fz implements FZ {
+export class Fz implements IFZ {
   // request
-  public static get(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'GET' });
+  public static get(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'GET' });
   }
-  public static post(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'POST' });
+  public static post(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'POST' });
   }
-  public static put(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'PUT' });
+  public static put(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'PUT' });
   }
-  public static patch(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'PATCH' });
+  public static patch(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'PATCH' });
   }
-  public static head(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'HEAD' });
+  public static head(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'HEAD' });
   }
 
-  public static delete(input: Input, option?: Option): FZ {
-    return new fz(input, { ...option, method: 'DELETE' });
+  public static delete(input: Input, option?: Option): IFZ {
+    return new Fz(input, { ...option, method: 'DELETE' });
   }
 
   private _response: Response | null = null;
@@ -46,10 +46,24 @@ export class fz implements FZ {
       method: options.method,
     };
 
+    this.applyPrefix();
+    this.applySuffix();
     this.applyQuery();
     this.applyParams();
     this.applyHeader();
     this.applyBody();
+  }
+
+  private applyPrefix() {
+    if (this.options.prefix) {
+      this.input = `${this.options.prefix}${this.input}`;
+    }
+  }
+
+  private applySuffix() {
+    if (this.options.suffix) {
+      this.input = `${this.input}${this.options.suffix}`;
+    }
   }
 
   private applyQuery() {
@@ -157,4 +171,6 @@ export class fz implements FZ {
   }
 }
 
-export default fz;
+export const fz = Fz;
+
+export default Fz;
