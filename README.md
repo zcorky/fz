@@ -38,6 +38,49 @@ import fz from '@zcorky/fz';
 ### fz.head(input, [options])
 ### fz.delete(input, [options])
 
+## Supported features
+
+- url parameter is automatically serialized
+- post data submission method is simplified
+- response return processing simplification
+- api timeout support
+- api request cache support
+- support for processing gbk
+- request and response interceptor support like axios
+- unified error handling
+- middleware support
+- cancel request support like axios
+- make http request from node.js
+
+## fz vs umi-request vs fetch vs axios
+
+| Features | fz | umi-request | fetch | axios |
+| :---------- | :---- | :-------------- | :-------------- | :-------------- |
+| implementation | Browser native support | Browser native support | Browser native support | XMLHttpRequest |
+| size | 3.4k | 9k | 4k (polyfill) | 14k |
+| query simplification | ❎ | ✅ | ❎ | ✅ |
+| post simplification | ✅ | ✅ | ❎ | ❎ |
+| timeout | ❎ | ✅ | ❎ | ✅ |
+| cache | ❎ | ✅ | ❎ | ❎ |
+| error Check | ✅ | ✅ | ❎ | ❎ |
+| error Handling | ✅ | ✅ | ❎ | ✅ |
+| interceptor | ✅ | ✅ | ❎ | ✅ |
+| prefix | ❎ | ✅ | ❎ | ❎ |
+| suffix | ❎ | ✅ | ❎ | ❎ |
+| processing gbk | ❎ | ✅ | ❎ | ❎ |
+| middleware | ✅ | ✅ | ❎ | ❎ |
+| cancel request | ❎ | ✅ | ❎ | ✅ |
+
+For more discussion, refer to [Traditional Ajax is dead, Fetch eternal life](https://github.com/camsong/blog/issues/2) If you have good suggestions and needs, please mention [issue](https://github.com/zcorky/fz/issues)
+
+## TODO Welcome pr
+
+- [x] Test case coverage 85%+
+- [x] write a document
+- [x] CI integration
+- [x] release configuration
+- [x] typescript
+
 ### Relatived
 * [ky](https://github.com/sindresorhus/ky) - Tiny and elegant HTTP client based on the browser Fetch API
 
