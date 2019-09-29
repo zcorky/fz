@@ -1,4 +1,4 @@
-export interface FZ {
+export interface IFZ {
   // response
   response(): Promise<Response>;
   text(): Promise<string>;
@@ -18,6 +18,8 @@ export interface Option {
   engine?: Fetch;
   retry?: number;
   timeout?: number;
+  prefix?: string;
+  suffix?: string;
   hooks?: Hooks;
   throwHttpErrors?: boolean
 }

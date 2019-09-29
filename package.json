@@ -1,6 +1,6 @@
 {
   "name": "@zcorky/fz",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A simply fetch library",
   "main": "lib/index.js",
   "repository": "https://github.com/zcorky/fz",
@@ -11,7 +11,7 @@
     "build": "npm run clean && tsc",
     "clean": "rimraf -rf lib",
     "test": "NODE_ENV=test nyc mocha --recursive test/**/*.spec.ts --exit --timeout 10000",
-    "test:core": "NODE_ENV=test nyc mocha test/core/**/*.spec.ts --exit --timeout 10000",
+    "test:options": "NODE_ENV=test nyc mocha test/options.*.spec.ts --exit --timeout 10000",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepublish": "npm run build"
   },
