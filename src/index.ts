@@ -1,5 +1,6 @@
 import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
-import { timeout, retry, HTTPError, TimeoutError } from './utils';
+import { isomorphicEngine, timeout, retry, HTTPError, TimeoutError } from './utils';
+
 export class fz implements FZ {
   // request
   public static get(input: Input, option?: Option): FZ {
@@ -32,7 +33,7 @@ export class fz implements FZ {
 
   constructor(private input: Input, private options: Option) {
     this._response = 123 as any;
-    this.engine = options.engine || window.fetch.bind(window) as any;
+    this.engine = options.engine || isomorphicEngine() as any;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
     this.hooks = options.hooks || {

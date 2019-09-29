@@ -1,5 +1,6 @@
 
 import { delay } from '@zcorky/delay';
+import * as fetch from 'isomorphic-fetch';
 
 export type TimeoutErrorType = typeof TimeoutError;
 export type HTTPErrorType = typeof HTTPError;
@@ -54,3 +55,9 @@ export const retry: Retry = (fn: RetryFn, times = 0, condition: Condition) => {
 
   return next();
 }
+
+const hasFetch = () => typeof window !== 'undefined'  && window.fetch;
+
+export const isomorphicEngine = () => {
+  return hasFetch() ? window.fetch.bind(window) : fetch
+};

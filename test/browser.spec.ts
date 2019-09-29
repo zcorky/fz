@@ -15,7 +15,7 @@ import { HTTPError, TimeoutError } from '../src/utils';
 (global as any).window.fetch = fetch;
 (global as any).window.Headers = Headers;
 
-describe('fz', () => {
+describe('client browser side', () => {
   describe('method', () => {
     let server;
 
@@ -207,7 +207,7 @@ describe('fz', () => {
 
   describe('options', () => {
     it('engine', () => {
-      expect((fz.get('/', { engine: fetch }) as any).engine).to.be.equal(fetch);
+      expect((fz.get('/', { engine: fetch as any }) as any).engine).to.be.equal(fetch);
     });
 
     it('timeout', () => {
