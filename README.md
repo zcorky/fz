@@ -59,14 +59,15 @@ import fz from '@zcorky/fz';
 | implementation | Browser native support | Browser native support | Browser native support | XMLHttpRequest |
 | size | 3.4k | 9k | 4k (polyfill) | 14k |
 | query simplification | ✅ | ✅ | ❎ | ✅ |
+| params simplification | ✅ | ❎ | ❎ | ❎ |
 | post simplification | ✅ | ✅ | ❎ | ❎ |
 | timeout | ✅ | ✅ | ❎ | ✅ |
 | cache | ❎ | ✅ | ❎ | ❎ |
 | error Check | ✅ | ✅ | ❎ | ❎ |
-| error Handling | ✅ | ✅ | ❎ | ✅ |
+| error Handling | ❎ | ✅ | ❎ | ✅ |
 | interceptor | ✅ | ✅ | ❎ | ✅ |
-| prefix | ❎ | ✅ | ❎ | ❎ |
-| suffix | ❎ | ✅ | ❎ | ❎ |
+| prefix | ✅ | ✅ | ❎ | ❎ |
+| suffix | ✅ | ✅ | ❎ | ❎ |
 | processing gbk | ❎ | ✅ | ❎ | ❎ |
 | middleware | ✅ | ✅ | ❎ | ❎ |
 | cancel request | ❎ | ✅ | ❎ | ✅ |
