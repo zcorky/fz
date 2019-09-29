@@ -244,10 +244,10 @@ describe('client browser side', () => {
   describe('hooks', () => {
     let server;
     const hooks = {
-      beforeRequest: [options => {
+      beforeRequest: [async options => {
         expect(options.method).to.be.equal('GET');
       }],
-      afterResponse: [response => {
+      afterResponse: [async response => {
         expect(response.status).to.be.equal(200);
       }],
     };
