@@ -58,9 +58,9 @@ import fz from '@zcorky/fz';
 | :---------- | :---- | :-------------- | :-------------- | :-------------- |
 | implementation | Browser native support | Browser native support | Browser native support | XMLHttpRequest |
 | size | 3.4k | 9k | 4k (polyfill) | 14k |
-| query simplification | ❎ | ✅ | ❎ | ✅ |
+| query simplification | ✅ | ✅ | ❎ | ✅ |
 | post simplification | ✅ | ✅ | ❎ | ❎ |
-| timeout | ❎ | ✅ | ❎ | ✅ |
+| timeout | ✅ | ✅ | ❎ | ✅ |
 | cache | ❎ | ✅ | ❎ | ❎ |
 | error Check | ✅ | ✅ | ❎ | ❎ |
 | error Handling | ✅ | ✅ | ❎ | ✅ |

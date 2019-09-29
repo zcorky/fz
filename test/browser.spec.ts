@@ -60,7 +60,7 @@ describe('client browser side', () => {
       server.get('/', (request, response) => {
         if (request.headers.accept.indexOf('json') !== -1) {
           response.setHeader('content-type', 'application/json');
-          response.end(JSON.stringify({ json: 'json' }));
+          response.end(JSON.stringify({ body: 'json' }));
         } else {
           response.end('text');
         }
@@ -77,7 +77,7 @@ describe('client browser side', () => {
     });
 
     it('json', async () => {
-      expect(await fz.get(server.url).json()).to.deep.equal({ json: 'json' });
+      expect(await fz.get(server.url).json()).to.deep.equal({ body: 'json' });
     });
 
     // it('formData', async () => {
@@ -123,7 +123,7 @@ describe('client browser side', () => {
       try {
         // const r = await fz.post(server.url).response();
         // console.log('fz: ', { s: r.status, st: r.statusText, ok: r.ok});
-        await fz.post(server.url, { json: { code: 400 } }).text();
+        await fz.post(server.url, { body: { code: 400 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Bad Request');
@@ -134,7 +134,7 @@ describe('client browser side', () => {
 
     it('http: 403(Forbidden)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 403 } }).text();
+        await fz.post(server.url, { body: { code: 403 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Forbidden');
@@ -143,7 +143,7 @@ describe('client browser side', () => {
 
     it('http: 408(Request Timeout)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 408 } }).text();
+        await fz.post(server.url, { body: { code: 408 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Request Timeout');
@@ -152,7 +152,7 @@ describe('client browser side', () => {
 
     it('http: 413(Payload Too Large)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 413 } }).text();
+        await fz.post(server.url, { body: { code: 413 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Payload Too Large');
@@ -161,7 +161,7 @@ describe('client browser side', () => {
 
     it('http: 429(Too Many Requests)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 429 } }).text();
+        await fz.post(server.url, { body: { code: 429 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Too Many Requests');
@@ -170,7 +170,7 @@ describe('client browser side', () => {
 
     it('http: 500(Internal Server Error)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 500 } }).text();
+        await fz.post(server.url, { body: { code: 500 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Internal Server Error');
@@ -179,7 +179,7 @@ describe('client browser side', () => {
 
     it('http: 502(Bad Gateway)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 502 } }).text();
+        await fz.post(server.url, { body: { code: 502 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Bad Gateway');
@@ -188,7 +188,7 @@ describe('client browser side', () => {
 
     it('http: 503(Service Unavailable)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 503 } }).text();
+        await fz.post(server.url, { body: { code: 503 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Service Unavailable');
@@ -197,7 +197,7 @@ describe('client browser side', () => {
 
     it('http: 504(Gateway Timeout)', async () => {
       try {
-        await fz.post(server.url, { json: { code: 504 } }).text();
+        await fz.post(server.url, { body: { code: 504 } }).text();
       } catch (e) {
         expect(e instanceof HTTPError).to.be.equal(true);
         expect(e.response.statusText).to.be.equal('Gateway Timeout');
@@ -236,8 +236,8 @@ describe('client browser side', () => {
     });
 
     it('json', () => {
-      const json = { json: 'json' };
-      expect((fz.post('/', { json }) as any).fetchOptions.body).to.be.equal(JSON.stringify(json));
+      const body = { body: 'json' };
+      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.equal(JSON.stringify(body));
     });
   });
 

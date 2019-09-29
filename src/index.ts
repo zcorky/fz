@@ -1,3 +1,5 @@
+import { add } from '@zcorky/query-string/lib/add';
+import { stringify } from '@zcorky/query-string';
 import { FZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
 import { isomorphicEngine, timeout, retry, HTTPError, TimeoutError } from './utils';
 
@@ -29,10 +31,9 @@ export class fz implements FZ {
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
-  private fetchOptions: Option = {};
+  private fetchOptions: Omit<Option, 'body'> & { body?: string } = {} as any;
 
-  constructor(private input: Input, private options: Option) {
-    // this._response = 123 as any; // @TODO should remove
+  constructor(private input: Input, private readonly options: Option) {
     this.engine = options.engine || isomorphicEngine() as any;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
@@ -43,13 +44,47 @@ export class fz implements FZ {
 
     this.fetchOptions = {
       method: options.method,
-      headers: options.headers || {},
     };
 
-    if (this.options.json) {
-      (this.fetchOptions as any).headers['content-type'] = 'application/json';
-      (this.fetchOptions as any).body = JSON.stringify(this.options.json);
+    this.applyQuery();
+    this.applyParams();
+    this.applyHeader();
+    this.applyBody();
+  }
+
+  private applyQuery() {
+    const query = this.options.query;
+    if (query) {
+      // @TODO
+      const index = this.input.indexOf('?');
+      if (index !== -1) {
+        this.input = `${this.input.slice(0, index)}?${add(this.input.slice(index), query)}`
+      } else {
+        this.input = `${this.input}?${stringify(query)}`
+      }
     }
+  }
+
+  private applyParams() {
+    const params = this.options.params;
+    if (params) {
+      // @TODO
+      this.input = this.input.replace(/\/:([^\/$]+)/g, (_, key) => {
+        return `/${params && params[key] || ''}`;
+      });
+    }
+  }
+
+  private applyBody() {
+    const body = this.options.body;
+    if (body) {
+      this.fetchOptions.headers!['content-type'] = 'application/json';
+      this.fetchOptions.body = JSON.stringify(body);
+    }
+  }
+
+  private applyHeader() {
+    this.fetchOptions.headers = this.options.headers || {};
   }
 
   public async response(): Promise<Response> {
@@ -61,7 +96,7 @@ export class fz implements FZ {
   }
 
   public async json<T extends object>(): Promise<T> {
-    (this.fetchOptions as any).headers['accept'] = 'application/json';
+    this.fetchOptions.headers!['accept'] = 'application/json';
 
     return this.getResponse<T>(ResponseTypes.json);
   }
