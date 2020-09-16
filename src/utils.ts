@@ -12,6 +12,7 @@ export type Retry = (fn: Function, count: number, condition: Condition) => Promi
 export class TimeoutError extends Error {
   constructor() {
     super('Request timeout');
+    
     this.name = 'TimeoutError';
   }
 }

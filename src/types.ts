@@ -33,8 +33,8 @@ export interface Hooks {
   afterResponse: AfterResponse[]
 }
 
-type BeforeRequest = (options?: Option) => Promise<void>
-type AfterResponse = (response?: Response) => Promise<void>
+export type BeforeRequest = (options: Option) => Promise<void>
+export type AfterResponse = (response: Response, options: Option) => Promise<void>
 
 export type Input = string
 

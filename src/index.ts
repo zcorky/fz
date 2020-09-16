@@ -3,6 +3,8 @@ import { stringify } from '@zcorky/query-string';
 import { IFZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
 import { isomorphicEngine, timeout, retry, HTTPError, TimeoutError } from './utils';
 
+export { Option, BeforeRequest, AfterResponse } from './types';
+
 export class Fz implements IFZ {
   // request
   public static get(input: Input, option?: Option): IFZ {
@@ -27,7 +29,7 @@ export class Fz implements IFZ {
 
   private _response: Response | null = null;
 
-  private engine: Fetch
+  private engine: Fetch;
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
@@ -128,8 +130,9 @@ export class Fz implements IFZ {
   }
 
   private async fetch(): Promise<Response> {
-    await this.beforeRequest(this.fetchOptions);
-    return timeout(this.engine(this.input, this.fetchOptions), this.timeout);
+    await this.beforeRequest(this.fetchOptions as any);
+
+    return await timeout(this.engine(this.input, this.fetchOptions), this.timeout);
   }
 
   private async getResponse<T>(type: string): Promise<T> {
@@ -166,7 +169,7 @@ export class Fz implements IFZ {
 
   private async afterResponse(response: Response) {
     for (const hook of this.hooks.afterResponse) {
-      await hook(response);
+      await hook(response, this.options);
     }
   }
 }

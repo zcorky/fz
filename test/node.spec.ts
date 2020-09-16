@@ -7,7 +7,7 @@ const expect = chai.expect;
 import * as createTestServer from 'create-test-server';
 import fetch, { Headers } from 'node-fetch';
 
-import { fz } from '../src';
+import { fz, BeforeRequest, AfterResponse } from '../src';
 import { Hooks } from '../src/types';
 import { HTTPError, TimeoutError } from '../src/utils';
 
@@ -243,11 +243,11 @@ describe('node server side', () => {
 
   describe('hooks', () => {
     let server;
-    const hooks = {
-      beforeRequest: [options => {
+    const hooks: Hooks = {
+      beforeRequest: [async options => {
         expect(options.method).to.be.equal('GET');
       }],
-      afterResponse: [response => {
+      afterResponse: [async response => {
         expect(response.status).to.be.equal(200);
       }],
     };
