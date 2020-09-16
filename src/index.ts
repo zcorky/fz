@@ -1,7 +1,9 @@
 import { add } from '@zcorky/query-string/lib/add';
-import { stringify } from '@zcorky/query-string';
+import * as qs from '@zcorky/query-string';
+
 import { IFZ, Input, Option, Hooks, ResponseTypes, Fetch } from './types';
 import { isomorphicEngine, timeout, retry, HTTPError, TimeoutError } from './utils';
+import { Headers } from './header';
 
 export { Option, BeforeRequest, AfterResponse } from './types';
 
@@ -33,7 +35,7 @@ export class Fz implements IFZ {
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
-  private fetchOptions: Omit<Option, 'body'> & { body?: string } = {} as any;
+  private fetchOptions: Omit<Option, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
 
   constructor(private input: Input, private readonly options: Option) {
     this.engine = options.engine || isomorphicEngine() as any;
@@ -76,7 +78,7 @@ export class Fz implements IFZ {
       if (index !== -1) {
         this.input = `${this.input.slice(0, index)}?${add(this.input.slice(index), query)}`
       } else {
-        this.input = `${this.input}?${stringify(query)}`
+        this.input = `${this.input}?${qs.stringify(query)}`
       }
     }
   }
@@ -93,14 +95,24 @@ export class Fz implements IFZ {
 
   private applyBody() {
     const body = this.options.body;
+    const headers = this.fetchOptions.headers!;
+    
     if (body) {
-      this.fetchOptions.headers!['content-type'] = 'application/json';
-      this.fetchOptions.body = JSON.stringify(body);
+      if (headers.isContentTypeJSON) {
+        this.fetchOptions.body = JSON.stringify(body);
+      } else if (headers.isContentTypeUrlencoded) {
+        this.fetchOptions.body = qs.stringify(body || {});
+      } else if (headers.isContentTypeForm){
+        // isContentTypeForm form-data
+      } else {
+        // fallback json
+        this.fetchOptions.body = JSON.stringify(body);
+      }
     }
   }
 
   private applyHeader() {
-    this.fetchOptions.headers = this.options.headers || {};
+    this.fetchOptions.headers = new Headers(this.options.headers);
   }
 
   public async response(): Promise<Response> {
@@ -112,8 +124,9 @@ export class Fz implements IFZ {
   }
 
   public async json<T extends object>(): Promise<T> {
-    this.fetchOptions.headers!['accept'] = 'application/json';
+    this.fetchOptions.headers!.set('accept', 'application/json');
 
+    
     return this.getResponse<T>(ResponseTypes.json);
   }
 
@@ -131,8 +144,10 @@ export class Fz implements IFZ {
 
   private async fetch(): Promise<Response> {
     await this.beforeRequest(this.fetchOptions as any);
+    const { headers, ...rest } = this.fetchOptions;
+    const finalOptions = { ...rest, headers: headers!.toObject() };
 
-    return await timeout(this.engine(this.input, this.fetchOptions), this.timeout);
+    return await timeout(this.engine(this.input, finalOptions), this.timeout);
   }
 
   private async getResponse<T>(type: string): Promise<T> {
@@ -147,7 +162,13 @@ export class Fz implements IFZ {
       }
 
       await this.afterResponse(response);
-      return (response.clone() as any)[type]();
+
+      try {
+        return await (response.clone() as any)[type]();
+      } catch (err) {
+        console.log('error: ', response.headers, await response.clone().text());
+        return null;
+      }
     });
   }
 

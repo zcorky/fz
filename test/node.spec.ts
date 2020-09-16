@@ -232,12 +232,12 @@ describe('node server side', () => {
 
     it('json', () => {
       const headers = { 'content-type': 'application/json' };
-      expect((fz.get('/', { headers }) as any).fetchOptions.headers).to.be.equal(headers);
+      expect((fz.get('/', { headers }) as any).fetchOptions.headers.toObject()).to.be.deep.equal(headers);
     });
 
     it('json', () => {
       const body = { body: 'json' };
-      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.equal(JSON.stringify(body));
+      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.deep.equal(JSON.stringify(body));
     });
   });
 

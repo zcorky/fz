@@ -32,7 +32,7 @@
     "tslint": "^5.10.0",
     "tslint-eslint-rules": "^5.3.1",
     "tslint-jsdoc-rules": "^0.1.2",
-    "typescript": "^3.1.6"
+    "typescript": "^4.0.2"
   },
   "files": [
     "lib"
@@ -50,7 +50,8 @@
       "source-map-support/register"
     ],
     "sourceMap": true,
-    "instrument": true
+    "instrument": true,
+    "lines": 85
   },
   "publishConfig": {
     "access": "public"

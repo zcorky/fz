@@ -105,8 +105,9 @@ describe('client browser side', () => {
       server.get('/', (request, response) => {
         setTimeout(() => response.end('timeout'), 100);
       });
+
       server.post('/', (request, response) => {
-        response.statusCode = request.body.code;
+        response.statusCode = request.body.code || 500;
         response.end();
       })
     });
@@ -232,12 +233,12 @@ describe('client browser side', () => {
 
     it('json', () => {
       const headers = { 'content-type': 'application/json' };
-      expect((fz.get('/', { headers }) as any).fetchOptions.headers).to.be.equal(headers);
+      expect((fz.get('/', { headers }) as any).fetchOptions.headers.toObject()).to.be.deep.equal(headers);
     });
 
     it('json', () => {
       const body = { body: 'json' };
-      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.equal(JSON.stringify(body));
+      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.deep.equal(JSON.stringify(body));
     });
   });
 
