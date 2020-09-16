@@ -1,11 +1,11 @@
 export interface IFZ {
   // response
   response(): Promise<Response>;
-  text(): Promise<string>;
-  json<T extends object>(): Promise<T>;
+  text(): Promise<string | null>;
+  json<T extends object>(): Promise<T | null>;
   // formData(): Promise<FormData>
-  arrayBuffer(): Promise<ArrayBuffer>;
-  blob(): Promise<Blob>;
+  arrayBuffer(): Promise<ArrayBuffer | null>;
+  blob(): Promise<Blob | null>;
 }
 
 export interface Option {
@@ -21,7 +21,7 @@ export interface Option {
   prefix?: string;
   suffix?: string;
   hooks?: Hooks;
-  throwHttpErrors?: boolean
+  throwHttpErrors?: boolean;
 }
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE';
@@ -33,10 +33,10 @@ export interface Hooks {
   afterResponse: AfterResponse[]
 }
 
-export type BeforeRequest = (options: Option) => Promise<void>
-export type AfterResponse = (response: Response, options: Option) => Promise<void>
+export type BeforeRequest = (options: Option) => Promise<void>;
+export type AfterResponse = (response: Response, options: Option) => Promise<void>;
 
-export type Input = string
+export type Input = string;
 
 export const enum ResponseTypes {
   json = 'json',
