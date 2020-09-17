@@ -52,4 +52,4 @@ export const enum ResponseTypes {
   blob = 'blob',
 };
 
-export type Fetch = (input?: string | Request | undefined, init?: RequestInit | undefined) => Promise<Response>
+export type Fetch = (input?: string | Request | undefined, init?: RequestInit | undefined) => Promise<Response>;

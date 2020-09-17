@@ -1,5 +1,5 @@
-export { Url, Method, Credentials, Hooks, BeforeRequest, AfterResponse } from './types';
-export { Headers, fetch, timeout, retry } from './utils';
+export * from './types';
+export * from './utils';
 
 import { Fz } from './core';
 
