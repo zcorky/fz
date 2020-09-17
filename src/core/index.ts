@@ -1,33 +1,41 @@
 import { add } from '@zcorky/query-string/lib/add';
 import * as qs from '@zcorky/query-string';
 
-import { IFZ, Input, Option, Hooks, ResponseTypes, Fetch } from '../types';
+import { IFZ, Url, Option, Hooks, ResponseTypes, Fetch } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
 
 export class Fz implements IFZ {
-  public static create(input: Input, option?: Option): IFZ {
-    return new Fz(input, option);
+  public static request(option: Option): IFZ {
+    return new Fz(option);
   }
 
-  // request
-  public static get(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'GET' });
-  }
-  public static post(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'POST' });
-  }
-  public static put(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'PUT' });
-  }
-  public static patch(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'PATCH' });
-  }
-  public static head(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'HEAD' });
+  // methods
+  public static get(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'GET' });
   }
 
-  public static delete(input: Input, option?: Option): IFZ {
-    return Fz.create(input, { ...option, method: 'DELETE' });
+  public static post(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'POST' });
+  }
+
+  public static put(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'PUT' });
+  }
+
+  public static patch(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'PATCH' });
+  }
+
+  public static head(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'HEAD' });
+  }
+
+  public static delete(url: Url, option?: Option): IFZ {
+    return Fz.request({ ...option, url, method: 'DELETE' });
+  }
+
+  public static fetch(url: Url, option: Option): IFZ {
+    return Fz.request({ ...option, url });
   }
 
   private _response: Response | null = null;
@@ -38,7 +46,7 @@ export class Fz implements IFZ {
   private hooks: Hooks;
   private fetchOptions: Omit<Option, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
 
-  constructor(private input: Input, private readonly options: Option = {}) {
+  constructor(private readonly options: Option) {
     this.engine = options.engine || fetch as any;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
@@ -48,6 +56,7 @@ export class Fz implements IFZ {
     };
 
     this.fetchOptions = {
+      url: options.url,
       method: options.method,
     };
 
@@ -61,13 +70,13 @@ export class Fz implements IFZ {
 
   private applyPrefix() {
     if (this.options.prefix) {
-      this.input = `${this.options.prefix}${this.input}`;
+      this.fetchOptions.url = `${this.options.prefix}${this.fetchOptions.url}`;
     }
   }
 
   private applySuffix() {
     if (this.options.suffix) {
-      this.input = `${this.input}${this.options.suffix}`;
+      this.fetchOptions.url = `${this.fetchOptions.url}${this.options.suffix}`;
     }
   }
 
@@ -75,11 +84,11 @@ export class Fz implements IFZ {
     const query = this.options.query;
     if (query) {
       // @TODO
-      const index = this.input.indexOf('?');
+      const index = this.fetchOptions.url.indexOf('?');
       if (index !== -1) {
-        this.input = `${this.input.slice(0, index)}?${add(this.input.slice(index), query)}`
+        this.fetchOptions.url = `${this.fetchOptions.url.slice(0, index)}?${add(this.fetchOptions.url.slice(index), query)}`
       } else {
-        this.input = `${this.input}?${qs.stringify(query)}`
+        this.fetchOptions.url = `${this.fetchOptions.url}?${qs.stringify(query)}`
       }
     }
   }
@@ -88,7 +97,7 @@ export class Fz implements IFZ {
     const params = this.options.params;
     if (params) {
       // @TODO
-      this.input = this.input.replace(/\/:([^\/$]+)/g, (_, key) => {
+      this.fetchOptions.url = this.fetchOptions.url.replace(/\/:([^\/$]+)/g, (_, key) => {
         return `/${params && params[key] || ''}`;
       });
     }
@@ -142,17 +151,17 @@ export class Fz implements IFZ {
     return this.getResponse<Blob>(ResponseTypes.blob);
   }
 
-  private async fetch(): Promise<Response> {
+  private async request(): Promise<Response> {
     await this.beforeRequest(this.fetchOptions as any);
     const { headers, ...rest } = this.fetchOptions;
     const finalOptions = { ...rest, headers: headers!.toObject() };
 
-    return await timeout(this.engine.call(this, this.input, finalOptions), this.timeout);
+    return await timeout(this.engine.call(this, this.fetchOptions.url, finalOptions), this.timeout);
   }
 
   private async getResponse<T>(type: string): Promise<T | null> {
     return this.retry(async () => {
-      const response =  await this.fetch();
+      const response =  await this.request();
 
       // response
       this._response = response;

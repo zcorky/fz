@@ -9,6 +9,7 @@ export interface IFZ {
 }
 
 export interface Option {
+  url: Url;
   method?: Method;
   query?: Record<string, any>;
   params?: Record<string, any>;
@@ -24,6 +25,8 @@ export interface Option {
   throwHttpErrors?: boolean;
 }
 
+export type Url = string;
+
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE';
 
 export type Credentials = 'same-origin' | 'include';
@@ -35,8 +38,6 @@ export interface Hooks {
 
 export type BeforeRequest = (options: Option) => Promise<void>;
 export type AfterResponse = (response: Response, options: Option) => Promise<void>;
-
-export type Input = string;
 
 export const enum ResponseTypes {
   json = 'json',
