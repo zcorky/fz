@@ -8,7 +8,7 @@ export interface IFZ {
   blob(): Promise<Blob | null>;
 }
 
-export interface Option {
+export interface Options {
   url: Url;
   method?: Method;
   query?: Record<string, any>;
@@ -41,8 +41,8 @@ export interface Hooks {
   afterResponse: AfterResponse[]
 }
 
-export type BeforeRequest = (options: Option) => Promise<void>;
-export type AfterResponse = (response: Response, options: Option) => Promise<void>;
+export type BeforeRequest = (options: Options) => Promise<void>;
+export type AfterResponse = (response: Response, options: Options) => Promise<void>;
 
 export const enum ResponseTypes {
   json = 'json',

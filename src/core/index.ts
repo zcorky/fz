@@ -2,41 +2,41 @@ import { add } from '@zcorky/query-string/lib/add';
 import * as qs from '@zcorky/query-string';
 import LRU from '@zcorky/lru';
 
-import { IFZ, Url, Option, Hooks, ResponseTypes, Fetch } from '../types';
+import { IFZ, Url, Options, Hooks, ResponseTypes, Fetch } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
 
 export class Fz implements IFZ {
-  public static request(option: Option): IFZ {
-    return new Fz(option);
+  public static request(options: Options): IFZ {
+    return new Fz(options);
   }
 
   // methods
-  public static get(url: Url, option?: Omit<Option, 'url' | 'body'>): IFZ {
-    return Fz.request({ ...option, url, method: 'GET' });
+  public static get(url: Url, options?: Omit<Options, 'url' | 'body'>): IFZ {
+    return Fz.request({ ...options, url, method: 'GET' });
   }
 
-  public static post(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
-    return Fz.request({ ...option, url, method: 'POST' });
+  public static post(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+    return Fz.request({ ...options, url, method: 'POST' });
   }
 
-  public static put(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
-    return Fz.request({ ...option, url, method: 'PUT' });
+  public static put(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+    return Fz.request({ ...options, url, method: 'PUT' });
   }
 
-  public static patch(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
-    return Fz.request({ ...option, url, method: 'PATCH' });
+  public static patch(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+    return Fz.request({ ...options, url, method: 'PATCH' });
   }
 
-  public static head(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
-    return Fz.request({ ...option, url, method: 'HEAD' });
+  public static head(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+    return Fz.request({ ...options, url, method: 'HEAD' });
   }
 
-  public static delete(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
-    return Fz.request({ ...option, url, method: 'DELETE' });
+  public static delete(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+    return Fz.request({ ...options, url, method: 'DELETE' });
   }
 
-  public static fetch(url: Url, option: Omit<Option, 'url'>): IFZ {
-    return Fz.request({ ...option, url });
+  public static fetch(url: Url, options: Omit<Options, 'url'>): IFZ {
+    return Fz.request({ ...options, url });
   }
 
   private static _cache: LRU<string, any> = null as any;
@@ -45,9 +45,9 @@ export class Fz implements IFZ {
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
-  private fetchOptions: Omit<Option, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
+  private fetchOptions: Omit<Options, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
 
-  constructor(private readonly options: Option) {
+  constructor(private readonly options: Options) {
     this.engine = options.engine || fetch as any;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
@@ -210,7 +210,7 @@ export class Fz implements IFZ {
     })
   }
 
-  private async beforeRequest(options: Option) {
+  private async beforeRequest(options: Options) {
     for (const hook of this.hooks.beforeRequest) {
       await hook(options);
     }
