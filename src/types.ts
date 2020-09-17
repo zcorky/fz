@@ -2,18 +2,18 @@ export interface IFZ {
   // response
   response(): Promise<Response | null>;
   text(): Promise<string | null>;
-  json<T extends object>(): Promise<T | null>;
+  json<T = any>(): Promise<T | null>;
   // formData(): Promise<FormData>
   arrayBuffer(): Promise<ArrayBuffer | null>;
   blob(): Promise<Blob | null>;
 }
 
-export interface Option {
+export interface Options {
   url: Url;
   method?: Method;
   query?: Record<string, any>;
   params?: Record<string, any>;
-  body?: Record<string, any>;
+  body?: Record<string, any> | FormData;
   credentials?: Credentials;
   headers?: Record<string, string>;
   engine?: Fetch;
@@ -23,6 +23,11 @@ export interface Option {
   suffix?: string;
   hooks?: Hooks;
   throwHttpErrors?: boolean;
+  cache?: boolean | ICacheOptions;
+}
+
+export interface ICacheOptions {
+  maxAge?: number;
 }
 
 export type Url = string;
@@ -36,8 +41,8 @@ export interface Hooks {
   afterResponse: AfterResponse[]
 }
 
-export type BeforeRequest = (options: Option) => Promise<void>;
-export type AfterResponse = (response: Response, options: Option) => Promise<void>;
+export type BeforeRequest = (options: Options) => Promise<void>;
+export type AfterResponse = (response: Response, options: Options) => Promise<void>;
 
 export const enum ResponseTypes {
   json = 'json',
@@ -47,4 +52,4 @@ export const enum ResponseTypes {
   blob = 'blob',
 };
 
-export type Fetch = (input?: string | Request | undefined, init?: RequestInit | undefined) => Promise<Response>
+export type Fetch = (input?: string | Request | undefined, init?: RequestInit | undefined) => Promise<Response>;
