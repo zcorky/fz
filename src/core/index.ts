@@ -11,27 +11,27 @@ export class Fz implements IFZ {
   }
 
   // methods
-  public static get(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static get(url: Url, option?: Omit<Option, 'url' | 'body'>): IFZ {
     return Fz.request({ ...option, url, method: 'GET' });
   }
 
-  public static post(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static post(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...option, url, method: 'POST' });
   }
 
-  public static put(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static put(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...option, url, method: 'PUT' });
   }
 
-  public static patch(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static patch(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...option, url, method: 'PATCH' });
   }
 
-  public static head(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static head(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...option, url, method: 'HEAD' });
   }
 
-  public static delete(url: Url, option?: Omit<Option, 'url'>): IFZ {
+  public static delete(url: Url, option?: Omit<Option, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...option, url, method: 'DELETE' });
   }
 
