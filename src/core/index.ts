@@ -172,17 +172,17 @@ export class Fz implements IFZ {
       this._response = response;
 
       if (!response.ok) {
-        throw new HTTPError(response);
+        throw new HTTPError(response.clone());
       }
 
-      await this.afterResponse(response);
+      await this.afterResponse(response.clone());
 
       if (!type) {
         return response;
       }
 
       try {
-        return await (response.clone() as any)[type]();
+        return await (response as any)[type]();
       } catch (err) {
         return null;
       }
