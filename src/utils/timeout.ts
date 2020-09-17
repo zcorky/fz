@@ -1,12 +1,20 @@
-import { delay } from '@zcorky/delay';
+// import { delay } from '@zcorky/delay';
 import { TimeoutError } from './error';
 
-export type Timeout = (promise: Promise<any>, ms: number) => Promise<any>;
+// export type Timeout = <T = any>(promise: Promise<T>, ms: number) => Promise<T>;
 
-export const timeout: Timeout = (promise, ms) => Promise.race([
-  promise,
-  (async () => {
-    await delay(ms);
-    throw new TimeoutError();
-  })(),
-]);
+export const timeout = async <T = any>(promise: Promise<T>, ms: number): Promise<T> => {
+  let it: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((resolve, reject) => {
+    it = setTimeout(() => reject(new TimeoutError()), ms)
+  });
+
+  const res = await Promise
+    .race<Promise<T>>([
+      promise,
+      timeoutPromise,
+    ]);
+
+  clearTimeout(it!);
+  return res;
+};
