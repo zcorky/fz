@@ -13,7 +13,7 @@ export interface Option {
   method?: Method;
   query?: Record<string, any>;
   params?: Record<string, any>;
-  body?: Record<string, any>;
+  body?: Record<string, any> | FormData;
   credentials?: Credentials;
   headers?: Record<string, string>;
   engine?: Fetch;

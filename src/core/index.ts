@@ -113,7 +113,7 @@ export class Fz implements IFZ {
       if (headers.isContentTypeJSON) {
         this.fetchOptions.body = JSON.stringify(body);
       } else if (headers.isContentTypeUrlencoded) {
-        this.fetchOptions.body = qs.stringify(body || {});
+        this.fetchOptions.body = qs.stringify(body as any || {});
       } else if (headers.isContentTypeForm){
         // isContentTypeForm form-data
       } else {
