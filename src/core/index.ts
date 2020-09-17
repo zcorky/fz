@@ -1,5 +1,6 @@
 import { add } from '@zcorky/query-string/lib/add';
 import * as qs from '@zcorky/query-string';
+import LRU from '@zcorky/lru';
 
 import { IFZ, Url, Option, Hooks, ResponseTypes, Fetch } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
@@ -38,7 +39,7 @@ export class Fz implements IFZ {
     return Fz.request({ ...option, url });
   }
 
-  private _response: Response | null = null;
+  private static _cache: LRU<string, any> = null as any;
 
   private engine: Fetch;
   private timeout: number;
@@ -66,6 +67,7 @@ export class Fz implements IFZ {
     this.applyParams();
     this.applyHeader();
     this.applyBody();
+    this.applyCache();
   }
 
   private applyPrefix() {
@@ -121,6 +123,12 @@ export class Fz implements IFZ {
     }
   }
 
+  private applyCache() {
+    if (this.options.cache) {
+      Fz._cache = Fz._cache || new LRU();
+    }
+  }
+
   private applyHeader() {
     this.fetchOptions.headers = new Headers(this.options.headers);
   }
@@ -133,7 +141,7 @@ export class Fz implements IFZ {
     return this.getResponse<string>(ResponseTypes.text);
   }
 
-  public async json<T extends object>() {
+  public async json<T extends any>() {
     this.fetchOptions.headers!.set('accept', 'application/json');
 
     return this.getResponse<T>(ResponseTypes.json);
@@ -166,23 +174,26 @@ export class Fz implements IFZ {
     };
 
     return this.retry(async () => {
-      const response =  await this.request(finalOptions);
+      let response = await this.getCachedResponse(finalOptions);
 
-      // response
-      this._response = response;
+      if (!response) {
+        response = await this.request(finalOptions);
+      }
 
       if (!response.ok) {
         throw new HTTPError(response.clone());
       }
 
+      await this.setCachedResponse(finalOptions, response.clone());
+
       await this.afterResponse(response.clone());
 
       if (!type) {
-        return response;
+        return response.clone();
       }
 
       try {
-        return await (response as any)[type]();
+        return await (response.clone() as any)[type]();
       } catch (err) {
         return null;
       }
@@ -209,5 +220,34 @@ export class Fz implements IFZ {
     for (const hook of this.hooks.afterResponse) {
       await hook(response, this.options);
     }
+  }
+
+  private async getCachedResponse(options: any): Promise<Response | null> {
+    if (!this.options.cache) {
+      return null;
+    }
+
+    const key = await this.getCachedKey(options);
+    return Fz._cache.get(key);
+  }
+
+  private async setCachedResponse(options: any, response: Response) {
+    if (!this.options.cache) {
+      return ;
+    }
+
+    const key = await this.getCachedKey(options);
+
+    if (typeof this.options.cache === 'boolean') {
+      return Fz._cache.set(key, response);
+    }
+
+    return Fz._cache.set(key, response, {
+      maxAge: this.options.cache?.maxAge!,
+    });
+  }
+
+  private async getCachedKey(options: any) {
+    return JSON.stringify(options);
   }
 }

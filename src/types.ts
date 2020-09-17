@@ -2,7 +2,7 @@ export interface IFZ {
   // response
   response(): Promise<Response | null>;
   text(): Promise<string | null>;
-  json<T extends object>(): Promise<T | null>;
+  json<T = any>(): Promise<T | null>;
   // formData(): Promise<FormData>
   arrayBuffer(): Promise<ArrayBuffer | null>;
   blob(): Promise<Blob | null>;
@@ -23,6 +23,11 @@ export interface Option {
   suffix?: string;
   hooks?: Hooks;
   throwHttpErrors?: boolean;
+  cache?: boolean | ICacheOptions;
+}
+
+export interface ICacheOptions {
+  maxAge?: number;
 }
 
 export type Url = string;
