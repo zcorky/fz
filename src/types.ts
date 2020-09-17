@@ -1,6 +1,6 @@
 export interface IFZ {
   // response
-  response(): Promise<Response>;
+  response(): Promise<Response | null>;
   text(): Promise<string | null>;
   json<T extends object>(): Promise<T | null>;
   // formData(): Promise<FormData>

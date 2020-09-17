@@ -10,31 +10,31 @@ export class Fz implements IFZ {
   }
 
   // methods
-  public static get(url: Url, option?: Option): IFZ {
+  public static get(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'GET' });
   }
 
-  public static post(url: Url, option?: Option): IFZ {
+  public static post(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'POST' });
   }
 
-  public static put(url: Url, option?: Option): IFZ {
+  public static put(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'PUT' });
   }
 
-  public static patch(url: Url, option?: Option): IFZ {
+  public static patch(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'PATCH' });
   }
 
-  public static head(url: Url, option?: Option): IFZ {
+  public static head(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'HEAD' });
   }
 
-  public static delete(url: Url, option?: Option): IFZ {
+  public static delete(url: Url, option?: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url, method: 'DELETE' });
   }
 
-  public static fetch(url: Url, option: Option): IFZ {
+  public static fetch(url: Url, option: Omit<Option, 'url'>): IFZ {
     return Fz.request({ ...option, url });
   }
 
@@ -125,8 +125,8 @@ export class Fz implements IFZ {
     this.fetchOptions.headers = new Headers(this.options.headers);
   }
 
-  public async response(): Promise<Response> {
-    return await this.fetch();
+  public async response(): Promise<Response | null> {
+    return await this.getResponse();
   }
 
   public async text() {
@@ -151,17 +151,22 @@ export class Fz implements IFZ {
     return this.getResponse<Blob>(ResponseTypes.blob);
   }
 
-  private async request(): Promise<Response> {
-    await this.beforeRequest(this.fetchOptions as any);
-    const { headers, ...rest } = this.fetchOptions;
-    const finalOptions = { ...rest, headers: headers!.toObject() };
-
+  private async request(finalOptions: any): Promise<Response> {
     return await timeout(this.engine.call(this, this.fetchOptions.url, finalOptions), this.timeout);
   }
 
-  private async getResponse<T>(type: string): Promise<T | null> {
+  private async getResponse<T>(type?: ResponseTypes): Promise<T | null> {
+    await this.beforeRequest(this.fetchOptions as any);
+
+    const { headers, ...rest } = this.fetchOptions;
+
+    const finalOptions = {
+      ...rest,
+      headers: headers!.toObject(),
+    };
+
     return this.retry(async () => {
-      const response =  await this.request();
+      const response =  await this.request(finalOptions);
 
       // response
       this._response = response;
@@ -171,6 +176,10 @@ export class Fz implements IFZ {
       }
 
       await this.afterResponse(response);
+
+      if (!type) {
+        return response;
+      }
 
       try {
         return await (response.clone() as any)[type]();
