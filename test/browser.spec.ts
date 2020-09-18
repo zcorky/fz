@@ -233,7 +233,7 @@ describe('client browser side', () => {
 
     it('json', () => {
       const headers = { 'content-type': 'application/json' };
-      expect((fz.get('/', { headers }) as any).fetchOptions.headers.toObject()).to.be.deep.equal(headers);
+      expect((fz.get('/', { headers }) as any).fetchOptions.headers.toObject()['content-type']).to.be.deep.equal(headers['content-type']);
     });
 
     it('json', () => {

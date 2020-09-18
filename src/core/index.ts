@@ -133,6 +133,10 @@ export class Fz implements IFZ {
     this.fetchOptions.headers = new Headers(this.options.headers);
   }
 
+  private async request(finalOptions: any): Promise<Response> {
+    return await timeout(this.engine.call(this, this.fetchOptions.url, finalOptions), this.timeout);
+  }
+
   public async response(): Promise<Response | null> {
     return await this.getResponse();
   }
@@ -157,10 +161,6 @@ export class Fz implements IFZ {
 
   public async blob(): Promise<Blob | null> {
     return this.getResponse<Blob>(ResponseTypes.blob);
-  }
-
-  private async request(finalOptions: any): Promise<Response> {
-    return await timeout(this.engine.call(this, this.fetchOptions.url, finalOptions), this.timeout);
   }
 
   private async getResponse<T>(type?: ResponseTypes): Promise<T | null> {

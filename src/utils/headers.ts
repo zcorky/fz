@@ -1,3 +1,5 @@
+import defaultUserAgent from './userAgent';
+
 export type MimeType = 'application/json' | 'multipart/form-data' | 'application/x-www-form-urlencoded';
 
 export class Headers {
@@ -33,6 +35,7 @@ export class Headers {
     return {
       ...this._headers,
       'content-type': this.contentType,
+      'user-agent': this.userAgent,
     };
   }
 
@@ -54,6 +57,10 @@ export class Headers {
 
   public get isContentTypeUrlencoded() {
     return this.isContentType('application/x-www-form-urlencoded');
+  }
+
+  public get userAgent(): string {
+    return this.get('user-agent') || defaultUserAgent();
   }
 
   private getKey(key: any) {
