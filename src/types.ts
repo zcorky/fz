@@ -53,3 +53,7 @@ export const enum ResponseTypes {
 };
 
 export type Fetch = (input?: string | Request | undefined, init?: RequestInit | undefined) => Promise<Response>;
+
+export type StatusCode = 400 | 401 | 403 | 404 | 405 | 429 | 500 | 502 | 503 | 504
+
+export type StatusHandler = AfterResponse;
