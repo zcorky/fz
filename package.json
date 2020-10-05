@@ -51,7 +51,7 @@
     ],
     "sourceMap": true,
     "instrument": true,
-    "lines": 85
+    "lines": 80
   },
   "publishConfig": {
     "access": "public"

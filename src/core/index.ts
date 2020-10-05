@@ -4,7 +4,7 @@ import LRU from '@zcorky/lru';
 
 import {
   IFZ, Url, Options, ResponseTypes, Fetch,
-  Hooks, AfterResponse,
+  Hooks, BeforeRequest, AfterResponse,
   StatusCode, StatusHandler,
 } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
@@ -44,11 +44,20 @@ export class Fz implements IFZ {
   }
 
   public static status(statusCode: StatusCode, handler: StatusHandler) {
-    if (!Fz._status[statusCode]) {
-      Fz._status[statusCode] = [];
+    if (!Fz._STATUS[statusCode]) {
+      Fz._STATUS[statusCode] = [];
     }
 
-    Fz._status[statusCode].push(handler);
+    Fz._STATUS[statusCode].push(handler);
+  }
+
+  public static loading(start: BeforeRequest, end: AfterResponse) {
+    Fz._LOADING.start = start;
+    Fz._LOADING.end = end;
+  }
+
+  public static enableShowLoading() {
+    Fz._DEFAULT_SHOW_LOADING = true;
   }
 
   public static onBadRequest(handler: StatusHandler) {
@@ -91,10 +100,13 @@ export class Fz implements IFZ {
     Fz.status(504, handler);
   }
 
-  private static _cache: LRU<string, any> = null as any;
-  private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
+  private static _CACHE: LRU<string, any> = null as any;
+  private static _STATUS: Record<StatusCode, StatusHandler[]> = {} as any;
+  private static _LOADING: { start: BeforeRequest, end: AfterResponse } = {} as any;
+  private static _DEFAULT_SHOW_LOADING = false;
 
   private engine: Fetch;
+  private showLoading: boolean;
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
@@ -102,6 +114,7 @@ export class Fz implements IFZ {
 
   constructor(private readonly options: Options) {
     this.engine = options.engine || fetch as any;
+    this.showLoading = typeof options.showLoading === 'undefined' ? Fz._DEFAULT_SHOW_LOADING : options.showLoading;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
     this.hooks = options.hooks || {
@@ -114,6 +127,7 @@ export class Fz implements IFZ {
       method: options.method,
     };
 
+    this.applyLoading();
     this.applyPrefix();
     this.applySuffix();
     this.applyQuery();
@@ -122,6 +136,16 @@ export class Fz implements IFZ {
     this.applyBody();
     this.applyCache();
     this.applyStatus();
+  }
+
+  private applyLoading() {
+    if (Fz._LOADING.start && this.showLoading) {
+      this.hooks.beforeRequest.push(Fz._LOADING.start);
+    }
+
+    if (Fz._LOADING.end && this.showLoading) {
+      this.hooks.afterResponse.push(Fz._LOADING.end);
+    }
   }
 
   private applyPrefix() {
@@ -179,12 +203,12 @@ export class Fz implements IFZ {
 
   private applyCache() {
     if (this.options.cache) {
-      Fz._cache = Fz._cache || new LRU();
+      Fz._CACHE = Fz._CACHE || new LRU();
     }
   }
 
   private applyStatus() {
-    const _sh = Fz._status;
+    const _sh = Fz._STATUS;
 
     const af: AfterResponse = async (response, options) => {
       const status = response.status;
@@ -297,7 +321,7 @@ export class Fz implements IFZ {
     }
 
     const key = await this.getCachedKey(options);
-    return Fz._cache.get(key);
+    return Fz._CACHE.get(key);
   }
 
   private async setCachedResponse(options: any, response: Response) {
@@ -308,10 +332,10 @@ export class Fz implements IFZ {
     const key = await this.getCachedKey(options);
 
     if (typeof this.options.cache === 'boolean') {
-      return Fz._cache.set(key, response);
+      return Fz._CACHE.set(key, response);
     }
 
-    return Fz._cache.set(key, response, {
+    return Fz._CACHE.set(key, response, {
       maxAge: this.options.cache?.maxAge!,
     });
   }

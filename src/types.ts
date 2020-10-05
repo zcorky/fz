@@ -24,6 +24,7 @@ export interface Options {
   hooks?: Hooks;
   throwHttpErrors?: boolean;
   cache?: boolean | ICacheOptions;
+  showLoading?: boolean;
 }
 
 export interface ICacheOptions {
