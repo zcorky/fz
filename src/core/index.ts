@@ -132,11 +132,11 @@ export class Fz implements IFZ {
   }
 
   private applyLoading() {
-    if (Fz._loading.start) {
+    if (Fz._loading.start && this.options.showLoading) {
       this.hooks.beforeRequest.push(Fz._loading.start);
     }
 
-    if (Fz._loading.end) {
+    if (Fz._loading.end && this.options.showLoading) {
       this.hooks.afterResponse.push(Fz._loading.end);
     }
   }
