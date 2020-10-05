@@ -51,6 +51,46 @@ export class Fz implements IFZ {
     Fz._status[statusCode].push(handler);
   }
 
+  public static onBadRequest(handler: StatusHandler) {
+    Fz.status(400, handler);
+  }
+
+  public static onUnauthorized(handler: StatusHandler) {
+    Fz.status(401, handler);
+  }
+
+  public static onForbidden(handler: StatusHandler) {
+    Fz.status(403, handler);
+  }
+
+  public static onNotFound(handler: StatusHandler) {
+    Fz.status(404, handler);
+  }
+
+  public static onMethodNotAllowed(handler: StatusHandler) {
+    Fz.status(405, handler);
+  }
+
+  public static onRateLimited(handler: StatusHandler) {
+    Fz.status(429, handler);
+  }
+
+  public static onInternalServerError(handler: StatusHandler) {
+    Fz.status(500, handler);
+  }
+
+  public static onBadGateway(handler: StatusHandler) {
+    Fz.status(502, handler);
+  }
+
+  public static onServiceUnavailable(handler: StatusHandler) {
+    Fz.status(503, handler);
+  }
+
+  public static onGatewayTimeout(handler: StatusHandler) {
+    Fz.status(504, handler);
+  }
+
   private static _cache: LRU<string, any> = null as any;
   private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
 
