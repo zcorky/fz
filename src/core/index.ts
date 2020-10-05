@@ -44,11 +44,11 @@ export class Fz implements IFZ {
   }
 
   public static status(statusCode: StatusCode, handler: StatusHandler) {
-    if (!Fz._status[statusCode]) {
-      Fz._status[statusCode] = [];
+    if (!Fz._STATUS[statusCode]) {
+      Fz._STATUS[statusCode] = [];
     }
 
-    Fz._status[statusCode].push(handler);
+    Fz._STATUS[statusCode].push(handler);
   }
 
   public static loading(start: BeforeRequest, end: AfterResponse) {
@@ -100,8 +100,8 @@ export class Fz implements IFZ {
     Fz.status(504, handler);
   }
 
-  private static _cache: LRU<string, any> = null as any;
-  private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
+  private static _CACHE: LRU<string, any> = null as any;
+  private static _STATUS: Record<StatusCode, StatusHandler[]> = {} as any;
   private static _LOADING: { start: BeforeRequest, end: AfterResponse } = {} as any;
   private static _DEFAULT_SHOW_LOADING = false;
 
@@ -203,12 +203,12 @@ export class Fz implements IFZ {
 
   private applyCache() {
     if (this.options.cache) {
-      Fz._cache = Fz._cache || new LRU();
+      Fz._CACHE = Fz._CACHE || new LRU();
     }
   }
 
   private applyStatus() {
-    const _sh = Fz._status;
+    const _sh = Fz._STATUS;
 
     const af: AfterResponse = async (response, options) => {
       const status = response.status;
@@ -321,7 +321,7 @@ export class Fz implements IFZ {
     }
 
     const key = await this.getCachedKey(options);
-    return Fz._cache.get(key);
+    return Fz._CACHE.get(key);
   }
 
   private async setCachedResponse(options: any, response: Response) {
@@ -332,10 +332,10 @@ export class Fz implements IFZ {
     const key = await this.getCachedKey(options);
 
     if (typeof this.options.cache === 'boolean') {
-      return Fz._cache.set(key, response);
+      return Fz._CACHE.set(key, response);
     }
 
-    return Fz._cache.set(key, response, {
+    return Fz._CACHE.set(key, response, {
       maxAge: this.options.cache?.maxAge!,
     });
   }
