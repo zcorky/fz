@@ -52,8 +52,12 @@ export class Fz implements IFZ {
   }
 
   public static loading(start: BeforeRequest, end: AfterResponse) {
-    Fz._loading.start = start;
-    Fz._loading.end = end;
+    Fz._LOADING.start = start;
+    Fz._LOADING.end = end;
+  }
+
+  public static enableShowLoading() {
+    Fz._DEFAULT_SHOW_LOADING = true;
   }
 
   public static onBadRequest(handler: StatusHandler) {
@@ -98,9 +102,11 @@ export class Fz implements IFZ {
 
   private static _cache: LRU<string, any> = null as any;
   private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
-  private static _loading: { start: BeforeRequest, end: AfterResponse } = {} as any;
+  private static _LOADING: { start: BeforeRequest, end: AfterResponse } = {} as any;
+  private static _DEFAULT_SHOW_LOADING = false;
 
   private engine: Fetch;
+  private showLoading: boolean;
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
@@ -108,6 +114,7 @@ export class Fz implements IFZ {
 
   constructor(private readonly options: Options) {
     this.engine = options.engine || fetch as any;
+    this.showLoading = typeof options.showLoading === 'undefined' ? Fz._DEFAULT_SHOW_LOADING : options.showLoading;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
     this.hooks = options.hooks || {
@@ -132,12 +139,12 @@ export class Fz implements IFZ {
   }
 
   private applyLoading() {
-    if (Fz._loading.start && this.options.showLoading) {
-      this.hooks.beforeRequest.push(Fz._loading.start);
+    if (Fz._LOADING.start && this.showLoading) {
+      this.hooks.beforeRequest.push(Fz._LOADING.start);
     }
 
-    if (Fz._loading.end && this.options.showLoading) {
-      this.hooks.afterResponse.push(Fz._loading.end);
+    if (Fz._LOADING.end && this.showLoading) {
+      this.hooks.afterResponse.push(Fz._LOADING.end);
     }
   }
 
