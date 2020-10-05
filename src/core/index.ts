@@ -2,7 +2,11 @@ import { add } from '@zcorky/query-string/lib/add';
 import * as qs from '@zcorky/query-string';
 import LRU from '@zcorky/lru';
 
-import { IFZ, Url, Options, Hooks, ResponseTypes, Fetch } from '../types';
+import {
+  IFZ, Url, Options, ResponseTypes, Fetch,
+  Hooks, AfterResponse,
+  StatusCode, StatusHandler,
+} from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
 
 export class Fz implements IFZ {
@@ -39,7 +43,56 @@ export class Fz implements IFZ {
     return Fz.request({ ...options, url });
   }
 
+  public static status(statusCode: StatusCode, handler: StatusHandler) {
+    if (!Fz._status[statusCode]) {
+      Fz._status[statusCode] = [];
+    }
+
+    Fz._status[statusCode].push(handler);
+  }
+
+  public static onBadRequest(handler: StatusHandler) {
+    Fz.status(400, handler);
+  }
+
+  public static onUnauthorized(handler: StatusHandler) {
+    Fz.status(401, handler);
+  }
+
+  public static onForbidden(handler: StatusHandler) {
+    Fz.status(403, handler);
+  }
+
+  public static onNotFound(handler: StatusHandler) {
+    Fz.status(404, handler);
+  }
+
+  public static onMethodNotAllowed(handler: StatusHandler) {
+    Fz.status(405, handler);
+  }
+
+  public static onRateLimited(handler: StatusHandler) {
+    Fz.status(429, handler);
+  }
+
+  public static onInternalServerError(handler: StatusHandler) {
+    Fz.status(500, handler);
+  }
+
+  public static onBadGateway(handler: StatusHandler) {
+    Fz.status(502, handler);
+  }
+
+  public static onServiceUnavailable(handler: StatusHandler) {
+    Fz.status(503, handler);
+  }
+
+  public static onGatewayTimeout(handler: StatusHandler) {
+    Fz.status(504, handler);
+  }
+
   private static _cache: LRU<string, any> = null as any;
+  private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
 
   private engine: Fetch;
   private timeout: number;
@@ -68,6 +121,7 @@ export class Fz implements IFZ {
     this.applyHeader();
     this.applyBody();
     this.applyCache();
+    this.applyStatus();
   }
 
   private applyPrefix() {
@@ -108,13 +162,13 @@ export class Fz implements IFZ {
   private applyBody() {
     const body = this.options.body;
     const headers = this.fetchOptions.headers!;
-    
+
     if (body) {
       if (headers.isContentTypeJSON) {
         this.fetchOptions.body = JSON.stringify(body);
       } else if (headers.isContentTypeUrlencoded) {
         this.fetchOptions.body = qs.stringify(body as any || {});
-      } else if (headers.isContentTypeForm){
+      } else if (headers.isContentTypeForm) {
         // isContentTypeForm form-data
       } else {
         // fallback json
@@ -127,6 +181,21 @@ export class Fz implements IFZ {
     if (this.options.cache) {
       Fz._cache = Fz._cache || new LRU();
     }
+  }
+
+  private applyStatus() {
+    const _sh = Fz._status;
+
+    const af: AfterResponse = async (response, options) => {
+      const status = response.status;
+      const handlers = _sh[status] || [];
+
+      for (const handler of handlers) {
+        await handler.call(this, response, options);
+      }
+    }
+
+    this.hooks.afterResponse.push(af);
   }
 
   private applyHeader() {
