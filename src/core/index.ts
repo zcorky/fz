@@ -4,7 +4,7 @@ import LRU from '@zcorky/lru';
 
 import {
   IFZ, Url, Options, ResponseTypes, Fetch,
-  Hooks, AfterResponse,
+  Hooks, BeforeRequest, AfterResponse,
   StatusCode, StatusHandler,
 } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
@@ -51,6 +51,11 @@ export class Fz implements IFZ {
     Fz._status[statusCode].push(handler);
   }
 
+  public static loading(start: BeforeRequest, end: AfterResponse) {
+    Fz._loading.start = start;
+    Fz._loading.end = end;
+  }
+
   public static onBadRequest(handler: StatusHandler) {
     Fz.status(400, handler);
   }
@@ -93,6 +98,7 @@ export class Fz implements IFZ {
 
   private static _cache: LRU<string, any> = null as any;
   private static _status: Record<StatusCode, StatusHandler[]> = {} as any;
+  private static _loading: { start: BeforeRequest, end: AfterResponse } = {} as any;
 
   private engine: Fetch;
   private timeout: number;
@@ -114,6 +120,7 @@ export class Fz implements IFZ {
       method: options.method,
     };
 
+    this.applyLoading();
     this.applyPrefix();
     this.applySuffix();
     this.applyQuery();
@@ -122,6 +129,16 @@ export class Fz implements IFZ {
     this.applyBody();
     this.applyCache();
     this.applyStatus();
+  }
+
+  private applyLoading() {
+    if (Fz._loading.start) {
+      this.hooks.beforeRequest.push(Fz._loading.start);
+    }
+
+    if (Fz._loading.end) {
+      this.hooks.afterResponse.push(Fz._loading.end);
+    }
   }
 
   private applyPrefix() {
