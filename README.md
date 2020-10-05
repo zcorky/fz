@@ -54,7 +54,7 @@ import fz from '@zcorky/fz';
 
 ## Features
 
-```
+```typescript
 // Apply Global Loading
 Fz.enableShowLoading();
 
