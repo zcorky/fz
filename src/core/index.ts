@@ -60,6 +60,14 @@ export class Fz implements IFZ {
     Fz._DEFAULT_SHOW_LOADING = true;
   }
 
+  public static beforeRequest(handler: BeforeRequest) {
+    Fz._HOOKS.beforeRequest.push(handler);
+  }
+
+  public static afterResponse(handler: AfterResponse) {
+    Fz._HOOKS.afterResponse.push(handler);
+  }
+
   public static onBadRequest(handler: StatusHandler) {
     Fz.status(400, handler);
   }
@@ -104,6 +112,10 @@ export class Fz implements IFZ {
   private static _STATUS: Record<StatusCode, StatusHandler[]> = {} as any;
   private static _LOADING: { start: BeforeRequest, end: AfterResponse } = {} as any;
   private static _DEFAULT_SHOW_LOADING = false;
+  private static _HOOKS: Hooks = {
+    beforeRequest: [],
+    afterResponse: [],
+  };
 
   private engine: Fetch;
   private showLoading: boolean;
