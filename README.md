@@ -52,6 +52,22 @@ import fz from '@zcorky/fz';
 - cancel request support like axios
 - make http request from node.js
 
+## Features
+
+```
+// Apply Global Loading
+Fz.enableShowLoading();
+
+Fz.loading(
+	async start() {
+		XXUI.showLoading();
+	},
+	async end() {
+		XXUI.hideLoading();
+	},
+);
+```
+
 ## fz vs umi-request vs fetch vs axios
 
 | Features | fz | umi-request | fetch | axios |
