@@ -55,6 +55,43 @@ import fz from '@zcorky/fz';
 ## Features
 
 ```typescript
+// When 400 BadRequest
+Fz.onUnauthorized(async (response, options) => {
+	// Do Something
+});
+
+// When 401 Unauthorized
+Fz.onUnauthorized(async (response, options) => {
+	// Do Something
+});
+
+// When 403 Forbidden
+Fz.onForbidden(async (response, options) => {
+	// Do Something
+});
+
+// When 404 Not Found
+Fz.onNotFound(async (response, options) => {
+	//
+});
+
+// When 405 Method Not Allowed
+Fz.onMethodNotAllowed(async (response, options) => {
+	//
+});
+
+// When 429 Too Many Requests
+Fz.onRateLimited(async (response, options) => {
+	//
+});
+
+// When 500 Internal Server Error
+Fz.onInternalServerError(async (response, options) => {
+	//
+});
+```
+
+```typescript
 // Apply Global Loading
 Fz.enableShowLoading();
 
