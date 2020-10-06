@@ -1,6 +1,7 @@
 import { add } from '@zcorky/query-string/lib/add';
 import * as qs from '@zcorky/query-string';
 import LRU from '@zcorky/lru';
+import { urlJoin } from '@zodash/url-join';
 
 import {
   IFZ, Url, Options, ResponseTypes, Fetch,
@@ -41,6 +42,10 @@ export class Fz implements IFZ {
 
   public static fetch(url: Url, options: Omit<Options, 'url'>): IFZ {
     return Fz.request({ ...options, url });
+  }
+
+  public static baseUrl(url: string) {
+    Fz._BASE_URL = url;
   }
 
   public static status(statusCode: StatusCode, handler: StatusHandler) {
@@ -116,6 +121,7 @@ export class Fz implements IFZ {
     beforeRequest: [],
     afterResponse: [],
   };
+  private static _BASE_URL = '';
 
   private engine: Fetch;
   private showLoading: boolean;
@@ -139,14 +145,26 @@ export class Fz implements IFZ {
       method: options.method,
     };
 
+    // loading
     this.applyLoading();
+
+    // url
     this.applyPrefix();
     this.applySuffix();
     this.applyQuery();
     this.applyParams();
+    this.applyBaseUrl();
+
+    // headers
     this.applyHeader();
+
+    // body
     this.applyBody();
+
+    // cache
     this.applyCache();
+
+    // status
     this.applyStatus();
   }
 
@@ -192,6 +210,12 @@ export class Fz implements IFZ {
       this.fetchOptions.url = this.fetchOptions.url.replace(/\/:([^\/$]+)/g, (_, key) => {
         return `/${params && params[key] || ''}`;
       });
+    }
+  }
+
+  private applyBaseUrl() {
+    if (Fz._BASE_URL) {
+      this.fetchOptions.url = urlJoin(Fz._BASE_URL, this.fetchOptions.url);
     }
   }
 

@@ -60,6 +60,7 @@
     "@zcorky/delay": "^1.0.1",
     "@zcorky/lru": "^1.0.3",
     "@zcorky/query-string": "^1.0.2",
+    "@zodash/url-join": "^0.1.0",
     "isomorphic-fetch": "^2.2.1"
   }
 }
