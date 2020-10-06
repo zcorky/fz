@@ -1,3 +1,5 @@
+import { HTTPError } from './utils/error';
+
 export interface IFZ {
   // response
   response(): Promise<Response | null>;
@@ -58,3 +60,5 @@ export type Fetch = (input?: string | Request | undefined, init?: RequestInit | 
 export type StatusCode = 400 | 401 | 403 | 404 | 405 | 429 | 500 | 502 | 503 | 504
 
 export type StatusHandler = AfterResponse;
+
+export type ErrorHandler = (error: HTTPError) => Promise<void>;

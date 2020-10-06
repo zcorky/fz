@@ -7,6 +7,7 @@ import {
   IFZ, Url, Options, ResponseTypes, Fetch,
   Hooks, BeforeRequest, AfterResponse,
   StatusCode, StatusHandler,
+  ErrorHandler,
 } from '../types';
 import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
 
@@ -63,6 +64,10 @@ export class Fz implements IFZ {
   public static loading(start: BeforeRequest, end: AfterResponse) {
     Fz._LOADING.start = start;
     Fz._LOADING.end = end;
+  }
+
+  public static error(handler: ErrorHandler) {
+    Fz._ERROR_HANDLER = handler;
   }
 
   public static enableShowLoading() {
@@ -127,6 +132,7 @@ export class Fz implements IFZ {
   };
   private static _BASE_URL = '';
   private static _HEADERS: Record<string, string> = {};
+  private static _ERROR_HANDLER: ErrorHandler;
 
   private engine: Fetch;
   private showLoading: boolean;
@@ -315,7 +321,7 @@ export class Fz implements IFZ {
       headers: headers!.toObject(),
     };
 
-    return this.retry(async () => {
+    const retryPromise = this.retry(async () => {
       let response = await this.getCachedResponse(finalOptions);
 
       if (!response) {
@@ -323,7 +329,21 @@ export class Fz implements IFZ {
       }
 
       if (!response.ok) {
-        throw new HTTPError(response.clone());
+        let data = {} as any;
+        try {
+          data = await response.clone().json();
+        } catch (error) {
+          //
+        }
+
+        throw new HTTPError(
+          response.status,
+          {
+            code: data?.code,
+            message: data?.message,
+          },
+          response.clone(),
+        );
       }
 
       await this.setCachedResponse(finalOptions, response.clone());
@@ -340,6 +360,20 @@ export class Fz implements IFZ {
         return null;
       }
     });
+
+    try {
+      return await retryPromise;
+    } catch (error) {
+      if (Fz._LOADING.end) {
+        await Fz._LOADING.end(error.response, this.options);
+      }
+
+      if (Fz._ERROR_HANDLER) {
+        await Fz._ERROR_HANDLER(error);
+      }
+
+      throw error;
+    }
   }
 
   private async retry(fn: Function) {
