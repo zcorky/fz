@@ -48,6 +48,10 @@ export class Fz implements IFZ {
     Fz._BASE_URL = url;
   }
 
+  public static headers(hs: Record<string, string>) {
+    Fz._HEADERS = hs;
+  }
+
   public static status(statusCode: StatusCode, handler: StatusHandler) {
     if (!Fz._STATUS[statusCode]) {
       Fz._STATUS[statusCode] = [];
@@ -122,6 +126,7 @@ export class Fz implements IFZ {
     afterResponse: [],
   };
   private static _BASE_URL = '';
+  private static _HEADERS: Record<string, string> = {};
 
   private engine: Fetch;
   private showLoading: boolean;
@@ -219,6 +224,18 @@ export class Fz implements IFZ {
     }
   }
 
+  private applyHeader() {
+    // @1 global
+    const headers = this.fetchOptions.headers = new Headers(Fz._HEADERS);
+
+    // @2 options
+    const optionHeaders = this.options.headers;
+    for (const key in optionHeaders) {
+      // override
+      headers.set(key, optionHeaders[key]);
+    }
+  }
+
   private applyBody() {
     const body = this.options.body;
     const headers = this.fetchOptions.headers!;
@@ -256,10 +273,6 @@ export class Fz implements IFZ {
     }
 
     this.hooks.afterResponse.push(af);
-  }
-
-  private applyHeader() {
-    this.fetchOptions.headers = new Headers(this.options.headers);
   }
 
   private async request(finalOptions: any): Promise<Response> {
