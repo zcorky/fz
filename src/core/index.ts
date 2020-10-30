@@ -336,6 +336,8 @@ export class Fz implements IFZ {
           //
         }
 
+        this.runStatusBeforeError(response);
+
         throw new HTTPError(
           response.status,
           {
@@ -371,7 +373,7 @@ export class Fz implements IFZ {
       if (Fz._ERROR_HANDLER) {
         const notThrow = await Fz._ERROR_HANDLER(error);
         if (notThrow) {
-          return ;
+          return null as any;
         }
       }
 
@@ -428,5 +430,20 @@ export class Fz implements IFZ {
 
   private async getCachedKey(options: any) {
     return JSON.stringify(options);
+  }
+
+  private async runStatusBeforeError(response: Response) {
+    const _sh = Fz._STATUS;
+
+    const af: AfterResponse = async (response, options) => {
+      const status = response.status;
+      const handlers = _sh[status] || [];
+
+      for (const handler of handlers) {
+        await handler.call(this, response, options);
+      }
+    }
+
+    return af(response, this.options);
   }
 }
