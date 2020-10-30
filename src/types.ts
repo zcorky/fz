@@ -61,4 +61,4 @@ export type StatusCode = 400 | 401 | 403 | 404 | 405 | 429 | 500 | 502 | 503 | 5
 
 export type StatusHandler = AfterResponse;
 
-export type ErrorHandler = (error: HTTPError) => Promise<void>;
+export type ErrorHandler = (error: HTTPError) => Promise<boolean>;

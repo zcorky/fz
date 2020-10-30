@@ -369,7 +369,10 @@ export class Fz implements IFZ {
       }
 
       if (Fz._ERROR_HANDLER) {
-        await Fz._ERROR_HANDLER(error);
+        const notThrow = await Fz._ERROR_HANDLER(error);
+        if (notThrow) {
+          return ;
+        }
       }
 
       throw error;
