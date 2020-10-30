@@ -336,7 +336,7 @@ export class Fz implements IFZ {
           //
         }
 
-        this.runStatusBeforeError(response);
+        this.runStatusBeforeError(response.clone());
 
         throw new HTTPError(
           response.status,
