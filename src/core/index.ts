@@ -9,7 +9,14 @@ import {
   StatusCode, StatusHandler,
   ErrorHandler,
 } from '../types';
-import { fetch, timeout, retry, HTTPError, TimeoutError, Headers } from '../utils';
+import {
+  fetch as DEFAULT_FETCH,
+  timeout,
+  retry,
+  HTTPError,
+  TimeoutError,
+  Headers,
+} from '../utils';
 
 export class Fz implements IFZ {
   public static request(options: Options): IFZ {
@@ -122,6 +129,10 @@ export class Fz implements IFZ {
     Fz.status(504, handler);
   }
 
+  public static engine(customEngine: Fetch) {
+    Fz._ENGINE = customEngine;
+  }
+
   private static _CACHE: LRU<string, any> = null as any;
   private static _STATUS: Record<StatusCode, StatusHandler[]> = {} as any;
   private static _LOADING: { start: BeforeRequest, end: AfterResponse } = {} as any;
@@ -133,6 +144,7 @@ export class Fz implements IFZ {
   private static _BASE_URL = '';
   private static _HEADERS: Record<string, string> = {};
   private static _ERROR_HANDLER: ErrorHandler;
+  private static _ENGINE: Fetch = null as any;
 
   private engine: Fetch;
   private showLoading: boolean;
@@ -142,7 +154,7 @@ export class Fz implements IFZ {
   private fetchOptions: Omit<Options, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
 
   constructor(private readonly options: Options) {
-    this.engine = options.engine || fetch as any;
+    this.engine = options.engine || Fz._ENGINE || DEFAULT_FETCH as any;
     this.showLoading = typeof options.showLoading === 'undefined' ? Fz._DEFAULT_SHOW_LOADING : options.showLoading;
     this.timeout = options.timeout || 30000;
     this.retryCount = options.retry || 0;
