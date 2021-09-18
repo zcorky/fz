@@ -9,14 +9,14 @@ export type Retry = (fn: Function, count: number, condition: Condition) => Promi
 
 export type RetryFn = ((...args: any[]) => Promise<any>) | Function;
 
-export const retry: Retry = (fn: RetryFn, times = 0, condition: Condition) => {
+export const retry: Retry = (fn: RetryFn, times = 0, isKnownError: Condition) => {
   let runtimes = 0;
 
   const next = async (): Promise<any> => {
     try {
       return await (fn as (...args: any[]) => Promise<any>)();
-    } catch (error) {
-      if (condition(error) && runtimes < times ) {
+    } catch (error: any) {
+      if (isKnownError(error) && runtimes < times ) {
         runtimes++;
         
         await delay(1000);

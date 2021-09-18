@@ -8,6 +8,7 @@ import {
   Hooks, BeforeRequest, AfterResponse,
   StatusCode, StatusHandler,
   ErrorHandler,
+  RequestConfig,
 } from '../types';
 import {
   fetch as DEFAULT_FETCH,
@@ -151,7 +152,7 @@ export class Fz implements IFZ {
   private timeout: number;
   private retryCount: number;
   private hooks: Hooks;
-  private fetchOptions: Omit<Options, 'headers' | 'body'> & { body?: string, headers?: Headers } = {} as any;
+  private requestConfig: RequestConfig = {} as any;
 
   constructor(private readonly options: Options) {
     this.engine = options.engine || Fz._ENGINE || DEFAULT_FETCH as any;
@@ -163,7 +164,7 @@ export class Fz implements IFZ {
       afterResponse: [],
     };
 
-    this.fetchOptions = {
+    this.requestConfig = {
       url: options.url,
       method: options.method,
     };
@@ -203,13 +204,13 @@ export class Fz implements IFZ {
 
   private applyPrefix() {
     if (this.options.prefix) {
-      this.fetchOptions.url = `${this.options.prefix}${this.fetchOptions.url}`;
+      this.requestConfig.url = `${this.options.prefix}${this.requestConfig.url}`;
     }
   }
 
   private applySuffix() {
     if (this.options.suffix) {
-      this.fetchOptions.url = `${this.fetchOptions.url}${this.options.suffix}`;
+      this.requestConfig.url = `${this.requestConfig.url}${this.options.suffix}`;
     }
   }
 
@@ -217,11 +218,11 @@ export class Fz implements IFZ {
     const query = this.options.query;
     if (query) {
       // @TODO
-      const index = this.fetchOptions.url.indexOf('?');
+      const index = this.requestConfig.url.indexOf('?');
       if (index !== -1) {
-        this.fetchOptions.url = `${this.fetchOptions.url.slice(0, index)}?${add(this.fetchOptions.url.slice(index), query)}`
+        this.requestConfig.url = `${this.requestConfig.url.slice(0, index)}?${add(this.requestConfig.url.slice(index), query)}`
       } else {
-        this.fetchOptions.url = `${this.fetchOptions.url}?${qs.stringify(query)}`
+        this.requestConfig.url = `${this.requestConfig.url}?${qs.stringify(query)}`
       }
     }
   }
@@ -230,7 +231,7 @@ export class Fz implements IFZ {
     const params = this.options.params;
     if (params) {
       // @TODO
-      this.fetchOptions.url = this.fetchOptions.url.replace(/\/:([^\/$]+)/g, (_, key) => {
+      this.requestConfig.url = this.requestConfig.url.replace(/\/:([^\/$]+)/g, (_, key) => {
         return `/${params && params[key] || ''}`;
       });
     }
@@ -238,13 +239,13 @@ export class Fz implements IFZ {
 
   private applyBaseUrl() {
     if (Fz._BASE_URL) {
-      this.fetchOptions.url = urlJoin(Fz._BASE_URL, this.fetchOptions.url);
+      this.requestConfig.url = urlJoin(Fz._BASE_URL, this.requestConfig.url);
     }
   }
 
   private applyHeader() {
     // @1 global
-    const headers = this.fetchOptions.headers = new Headers(Fz._HEADERS);
+    const headers = this.requestConfig.headers = new Headers(Fz._HEADERS);
 
     // @2 options
     const optionHeaders = this.options.headers;
@@ -256,18 +257,18 @@ export class Fz implements IFZ {
 
   private applyBody() {
     const body = this.options.body;
-    const headers = this.fetchOptions.headers!;
+    const headers = this.requestConfig.headers!;
 
     if (body) {
       if (headers.isContentTypeJSON) {
-        this.fetchOptions.body = JSON.stringify(body);
+        this.requestConfig.body = JSON.stringify(body);
       } else if (headers.isContentTypeUrlencoded) {
-        this.fetchOptions.body = qs.stringify(body as any || {});
+        this.requestConfig.body = qs.stringify(body as any || {});
       } else if (headers.isContentTypeForm) {
         // isContentTypeForm form-data
       } else {
         // fallback json
-        this.fetchOptions.body = JSON.stringify(body);
+        this.requestConfig.body = JSON.stringify(body);
       }
     }
   }
@@ -294,7 +295,7 @@ export class Fz implements IFZ {
   }
 
   private async request(finalOptions: any): Promise<Response> {
-    return await timeout(this.engine.call(this, this.fetchOptions.url, finalOptions), this.timeout);
+    return await timeout(this.engine.call(this, this.requestConfig.url, finalOptions), this.timeout);
   }
 
   public async response(): Promise<Response | null> {
@@ -306,7 +307,7 @@ export class Fz implements IFZ {
   }
 
   public async json<T extends any>() {
-    this.fetchOptions.headers!.set('accept', 'application/json');
+    this.requestConfig.headers!.set('accept', 'application/json');
 
     return this.getResponse<T>(ResponseTypes.json);
   }
@@ -324,9 +325,9 @@ export class Fz implements IFZ {
   }
 
   private async getResponse<T>(type?: ResponseTypes): Promise<T | null> {
-    await this.beforeRequest(this.fetchOptions as any);
+    await this.beforeRequest(this.requestConfig as any);
 
-    const { headers, ...rest } = this.fetchOptions;
+    const { headers, ...rest } = this.requestConfig;
 
     const finalOptions = {
       ...rest,
@@ -357,6 +358,7 @@ export class Fz implements IFZ {
             message: data?.message,
           },
           response.clone(),
+          this.requestConfig,
         );
       }
 
@@ -377,7 +379,7 @@ export class Fz implements IFZ {
 
     try {
       return await retryPromise;
-    } catch (error) {
+    } catch (error: any) {
       if (Fz._LOADING.end) {
         await Fz._LOADING.end(error.response, this.options);
       }

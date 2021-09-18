@@ -1,4 +1,5 @@
 import { HTTPError } from './utils/error';
+import { Headers } from './utils';
 
 export interface IFZ {
   // response
@@ -28,6 +29,8 @@ export interface Options {
   cache?: boolean | ICacheOptions;
   showLoading?: boolean;
 }
+
+export type RequestConfig = Omit<Options, 'headers' | 'body'> & { body?: string, headers?: Headers };
 
 export interface ICacheOptions {
   maxAge?: number;
