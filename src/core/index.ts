@@ -295,7 +295,7 @@ export class Fz implements IFZ {
   }
 
   private async request(finalOptions: any): Promise<Response> {
-    return await timeout(this.engine.call(this, this.requestConfig.url, finalOptions), this.timeout);
+    return await timeout(this.engine.call(this.engine, this.requestConfig.url, finalOptions), this.timeout);
   }
 
   public async response(): Promise<Response | null> {
@@ -345,7 +345,7 @@ export class Fz implements IFZ {
         let data = {} as any;
         try {
           data = await response.clone().json();
-        } catch (error) {
+        } catch (error: any) {
           //
         }
 
@@ -372,7 +372,7 @@ export class Fz implements IFZ {
 
       try {
         return await (response.clone() as any)[type]();
-      } catch (err) {
+      } catch (err: any) {
         return null;
       }
     });

@@ -1,9 +1,3 @@
-const chai = require('chai');
-const spies = require('chai-spies');
-
-chai.use(spies);
-const expect = chai.expect;
-
 import * as createTestServer from 'create-test-server';
 import fetch, { Headers } from 'node-fetch';
 
@@ -19,7 +13,7 @@ describe('client browser side', () => {
   describe('method', () => {
     let server;
 
-    before(async () => {
+    beforeEach(async () => {
       server = await createTestServer();
       server.get('/', (request, response) => {
         response.end(request.method);
@@ -45,17 +39,21 @@ describe('client browser side', () => {
       });
     });
 
+    afterEach(async () => {
+      await server.close();
+    });
+
     ['get', 'post', 'put', 'patch', 'delete', 'head'].forEach((method) => {
       it(method, async () => {
         expect((await fz[method](server.url).text()).toLowerCase())
-          .to.be.equal(method === 'head' ? '' : method);
+          .toEqual(method === 'head' ? '' : method);
       });
     });
   });
 
   describe('response type', () => {
     let server;
-    before(async () => {
+    beforeAll(async () => {
       server = await createTestServer();
       server.get('/', (request, response) => {
         if (request.headers.accept.indexOf('json') !== -1) {
@@ -65,42 +63,45 @@ describe('client browser side', () => {
           response.end('text');
         }
       });
-      return server;
+    });
+
+    afterAll(async () => {
+      await server.close();
     });
 
     it('response', async () => {
-      expect(await fz.get(server.url).response()).to.be.have.property('status');
+      expect(await fz.get(server.url).response()).toHaveProperty('status');
     });
 
     it('text', async () => {
-      expect(await fz.get(server.url).text()).to.be.equal('text');
+      expect(await fz.get(server.url).text()).toEqual('text');
     });
 
     it('json', async () => {
-      expect(await fz.get(server.url).json()).to.deep.equal({ body: 'json' });
+      expect(await fz.get(server.url).json()).toEqual({ body: 'json' });
     });
 
     // it('formData', async () => {
     //   try {
     //     console.log('xx: ', await fz.get(server.url).formData());
-    //   } catch (e) {
+    //   } catch (e: any) {
     //     console.log('xx: ', e);
     //   }
-    //   expect(await fz.get(server.url).formData()).to.throw;
+    //   expect(await fz.get(server.url).formData()).toThrow();
     // });
 
     it('arrayBuffer', async () => {
-      expect(await fz.get(server.url).arrayBuffer()).to.throw; /* tslint:disable-line */
+      expect(() => fz.get(server.url).arrayBuffer()).not.toThrow(); /* tslint:disable-line */
     });
 
     it('blob', async () => {
-      expect(await fz.get(server.url).blob()).to.throw; /* tslint:disable-line */
+      expect(() => fz.get(server.url).blob()).not.toThrow(); /* tslint:disable-line */
     });
   });
 
   describe('execption', () => {
     let server;
-    before(async () => {
+    beforeAll(async () => {
       server = await createTestServer();
       server.get('/', (request, response) => {
         setTimeout(() => response.end('timeout'), 100);
@@ -112,11 +113,15 @@ describe('client browser side', () => {
       })
     });
 
+    // afterAll(async () => {
+    //   await server.close();
+    // });
+
     it('timeout', async () => {
       try {
         await fz.get(server.url, { timeout: 1, retry: 2 }).text();
-      } catch (e) {
-        expect(e instanceof TimeoutError).to.be.equal(true);
+      } catch (e: any) {
+        expect(e instanceof TimeoutError).toEqual(true);
       }
     });
 
@@ -125,9 +130,9 @@ describe('client browser side', () => {
         // const r = await fz.post(server.url).response();
         // console.log('fz: ', { s: r.status, st: r.statusText, ok: r.ok});
         await fz.post(server.url, { body: { code: 400 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Bad Request');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Bad Request');
         // const r = e.response;
         // console.log('fz e: ', { s: r.status, st: r.statusText, ok: r.ok});
       }
@@ -136,87 +141,87 @@ describe('client browser side', () => {
     it('http: 403(Forbidden)', async () => {
       try {
         await fz.post(server.url, { body: { code: 403 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Forbidden');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Forbidden');
       }
     });
 
     it('http: 408(Request Timeout)', async () => {
       try {
         await fz.post(server.url, { body: { code: 408 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Request Timeout');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Request Timeout');
       }
     });
 
     it('http: 413(Payload Too Large)', async () => {
       try {
         await fz.post(server.url, { body: { code: 413 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Payload Too Large');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Payload Too Large');
       }
     });
 
     it('http: 429(Too Many Requests)', async () => {
       try {
         await fz.post(server.url, { body: { code: 429 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Too Many Requests');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Too Many Requests');
       }
     });
 
     it('http: 500(Internal Server Error)', async () => {
       try {
         await fz.post(server.url, { body: { code: 500 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Internal Server Error');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Internal Server Error');
       }
     });
 
     it('http: 502(Bad Gateway)', async () => {
       try {
         await fz.post(server.url, { body: { code: 502 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Bad Gateway');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Bad Gateway');
       }
     });
 
     it('http: 503(Service Unavailable)', async () => {
       try {
         await fz.post(server.url, { body: { code: 503 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Service Unavailable');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Service Unavailable');
       }
     });
 
     it('http: 504(Gateway Timeout)', async () => {
       try {
         await fz.post(server.url, { body: { code: 504 } }).text();
-      } catch (e) {
-        expect(e instanceof HTTPError).to.be.equal(true);
-        expect(e.response.statusText).to.be.equal('Gateway Timeout');
+      } catch (e: any) {
+        expect(e instanceof HTTPError).toEqual(true);
+        expect(e.response.statusText).toEqual('Gateway Timeout');
       }
     });
   });
 
   describe('options', () => {
     it('engine', () => {
-      expect((fz.get('/', { engine: fetch as any }) as any).engine).to.be.equal(fetch);
+      expect((fz.get('/', { engine: fetch as any }) as any).engine).toEqual(fetch);
     });
 
     it('timeout', () => {
-      expect((fz.get('/', { timeout: 1 }) as any).timeout).to.be.equal(1);
+      expect((fz.get('/', { timeout: 1 }) as any).timeout).toEqual(1);
     });
 
     it('retry', () => {
-      expect((fz.get('/', { retry: 1 }) as any).retryCount).to.be.equal(1);
+      expect((fz.get('/', { retry: 1 }) as any).retryCount).toEqual(1);
     });
 
     it('hooks', () => {
@@ -224,21 +229,21 @@ describe('client browser side', () => {
         beforeRequest: [],
         afterResponse: [],
       };
-      expect((fz.get('/', { hooks }) as any).hooks).to.be.equal(hooks);
+      expect((fz.get('/', { hooks }) as any).hooks).toEqual(hooks);
     });
 
     it('method', () => {
-      expect((fz.get('/') as any).fetchOptions.method).to.be.equal('GET');
+      expect((fz.get('/') as any).requestConfig.method).toEqual('GET');
     });
 
     it('json', () => {
       const headers = { 'content-type': 'application/json' };
-      expect((fz.get('/', { headers }) as any).fetchOptions.headers.toObject()['content-type']).to.be.deep.equal(headers['content-type']);
+      expect((fz.get('/', { headers }) as any).requestConfig.headers.toObject()['content-type']).toEqual(headers['content-type']);
     });
 
     it('json', () => {
       const body = { body: 'json' };
-      expect((fz.post('/', { body }) as any).fetchOptions.body).to.be.deep.equal(JSON.stringify(body));
+      expect((fz.post('/', { body }) as any).requestConfig.body).toEqual(JSON.stringify(body));
     });
   });
 
@@ -246,19 +251,23 @@ describe('client browser side', () => {
     let server;
     const hooks = {
       beforeRequest: [async options => {
-        expect(options.method).to.be.equal('GET');
+        expect(options.method).toEqual('GET');
       }],
       afterResponse: [async response => {
-        expect(response.status).to.be.equal(200);
+        expect(response.status).toEqual(200);
       }],
     };
 
-    before(async () => {
+    beforeEach(async () => {
       server = await createTestServer();
       server.get('/', (request, response) => {
         setTimeout(() => response.end('timeout'), 100);
       });
       return server;
+    });
+
+    afterEach(async () => {
+      await server.close();
     });
 
     it('beforeRequest', async () => {
@@ -274,7 +283,7 @@ describe('client browser side', () => {
     let server;
     beforeEach(async () => {
       server = await createTestServer();
-      server.spy = chai.spy();
+      server.spy = jest.fn();
       server.get('/', (request, response) => {
         server.spy();
 
@@ -282,39 +291,39 @@ describe('client browser side', () => {
       });
     });
 
-    // afterEach(() => {
-    //   spy.restore
-    // });
+    afterEach(async () => {
+      await server.close();
+    });
 
     it('default 0', async () => {
       try {
         await fz.get(server.url, { timeout: 100 }).text();
-      } catch (e) {
-        expect(server.spy).to.have.been.called.once; /* tslint:disable-line */
+      } catch (e: any) {
+        expect(server.spy).toHaveBeenCalledTimes(1); /* tslint:disable-line */
       }
     });
 
     it('once', async () => {
       try {
         await fz.get(server.url, { timeout: 100, retry: 1 }).text();
-      } catch (e) {
-        expect(server.spy).to.have.been.called.twice; /* tslint:disable-line */
+      } catch (e: any) {
+        expect(server.spy).toHaveBeenCalledTimes(2); /* tslint:disable-line */
       }
     });
 
     it('twice', async () => {
       try {
         await fz.get(server.url, { timeout: 100, retry: 2 }).text();
-      } catch (e) {
-        expect(server.spy).to.have.been.called.exactly(3);
+      } catch (e: any) {
+        expect(server.spy).toHaveBeenCalledTimes(3);
       }
     });
 
     it('five', async () => {
       try {
         await fz.get(server.url, { timeout: 100, retry: 5 }).text();
-      } catch (e) {
-        expect(server.spy).to.have.been.called.exactly(6);
+      } catch (e: any) {
+        expect(server.spy).toHaveBeenCalledTimes(6);
       }
     });
   })

@@ -1,9 +1,3 @@
-const chai = require('chai');
-const spies = require('chai-spies');
-
-chai.use(spies);
-const expect = chai.expect;
-
 import * as createTestServer from 'create-test-server';
 
 import { fz } from '../src';
@@ -11,7 +5,7 @@ import { fz } from '../src';
 describe('option.prefix', () => {
   let server;
 
-  before(async () => {
+  beforeEach(async () => {
     server = await createTestServer();
     server.get('/prefix/namespace', (request, response) => {
       response.json(request.body);
@@ -31,14 +25,17 @@ describe('option.prefix', () => {
     server.delete('/prefix/namespace', (request, response) => {
       response.json(request.body);
     });
+  });
 
+  afterEach(async () => {
+    await server.close();
   });
 
   ['post', 'put', 'patch', 'delete'].forEach((method) => {
     it(`${method.toUpperCase()} with body`, async () => {
       const body = { id: '666' };
       expect(await fz[method]('/namespace', { body, prefix: server.url + '/prefix' }).json())
-        .to.be.deep.equal(body);
+        .toEqual(body);
     });
   });
 });
