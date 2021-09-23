@@ -4,7 +4,7 @@ import LRU from '@zcorky/lru';
 import { urlJoin } from '@zodash/url-join';
 
 import {
-  IFZ, Url, Options, ResponseTypes, Fetch,
+  IFZ, Url, FzConfig, ResponseTypes, Fetch,
   Hooks, BeforeRequest, AfterResponse,
   StatusCode, StatusHandler,
   ErrorHandler,
@@ -20,36 +20,36 @@ import {
 } from '../utils';
 
 export class Fz implements IFZ {
-  public static request(options: Options): IFZ {
+  public static request(options: FzConfig): IFZ {
     return new Fz(options);
   }
 
   // methods
-  public static get(url: Url, options?: Omit<Options, 'url' | 'body'>): IFZ {
+  public static get(url: Url, options?: Omit<FzConfig, 'url' | 'body'>): IFZ {
     return Fz.request({ ...options, url, method: 'GET' });
   }
 
-  public static post(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+  public static post(url: Url, options?: Omit<FzConfig, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...options, url, method: 'POST' });
   }
 
-  public static put(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+  public static put(url: Url, options?: Omit<FzConfig, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...options, url, method: 'PUT' });
   }
 
-  public static patch(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+  public static patch(url: Url, options?: Omit<FzConfig, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...options, url, method: 'PATCH' });
   }
 
-  public static head(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+  public static head(url: Url, options?: Omit<FzConfig, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...options, url, method: 'HEAD' });
   }
 
-  public static delete(url: Url, options?: Omit<Options, 'url' | 'retry'>): IFZ {
+  public static delete(url: Url, options?: Omit<FzConfig, 'url' | 'retry'>): IFZ {
     return Fz.request({ ...options, url, method: 'DELETE' });
   }
 
-  public static fetch(url: Url, options: Omit<Options, 'url'>): IFZ {
+  public static fetch(url: Url, options: Omit<FzConfig, 'url'>): IFZ {
     return Fz.request({ ...options, url });
   }
 
@@ -154,20 +154,24 @@ export class Fz implements IFZ {
   private hooks: Hooks;
   private requestConfig: RequestConfig = {} as any;
 
-  constructor(private readonly options: Options) {
-    this.engine = options.engine || Fz._ENGINE || DEFAULT_FETCH as any;
-    this.showLoading = typeof options.showLoading === 'undefined' ? Fz._DEFAULT_SHOW_LOADING : options.showLoading;
-    this.timeout = options.timeout || 30000;
-    this.retryCount = options.retry || 0;
-    this.hooks = options.hooks || {
+  constructor(private readonly config: FzConfig) {
+    this.engine = config.engine || Fz._ENGINE || DEFAULT_FETCH as any;
+    this.showLoading = typeof config.showLoading === 'undefined' ? Fz._DEFAULT_SHOW_LOADING : config.showLoading;
+    this.timeout = config.timeout || 30000;
+    this.retryCount = config.retry || 0;
+    this.hooks = config.hooks || {
       beforeRequest: [],
       afterResponse: [],
     };
 
     this.requestConfig = {
-      url: options.url,
-      method: options.method,
+      url: config.url,
+      method: config.method,
     };
+
+    if (config.agent) {
+      this.requestConfig.agent = config.agent;
+    }
 
     // loading
     this.applyLoading();
@@ -203,19 +207,19 @@ export class Fz implements IFZ {
   }
 
   private applyPrefix() {
-    if (this.options.prefix) {
-      this.requestConfig.url = `${this.options.prefix}${this.requestConfig.url}`;
+    if (this.config.prefix) {
+      this.requestConfig.url = `${this.config.prefix}${this.requestConfig.url}`;
     }
   }
 
   private applySuffix() {
-    if (this.options.suffix) {
-      this.requestConfig.url = `${this.requestConfig.url}${this.options.suffix}`;
+    if (this.config.suffix) {
+      this.requestConfig.url = `${this.requestConfig.url}${this.config.suffix}`;
     }
   }
 
   private applyQuery() {
-    const query = this.options.query;
+    const query = this.config.query;
     if (query) {
       // @TODO
       const index = this.requestConfig.url.indexOf('?');
@@ -228,7 +232,7 @@ export class Fz implements IFZ {
   }
 
   private applyParams() {
-    const params = this.options.params;
+    const params = this.config.params;
     if (params) {
       // @TODO
       this.requestConfig.url = this.requestConfig.url.replace(/\/:([^\/$]+)/g, (_, key) => {
@@ -248,7 +252,7 @@ export class Fz implements IFZ {
     const headers = this.requestConfig.headers = new Headers(Fz._HEADERS);
 
     // @2 options
-    const optionHeaders = this.options.headers;
+    const optionHeaders = this.config.headers;
     for (const key in optionHeaders) {
       // override
       headers.set(key, optionHeaders[key]);
@@ -256,7 +260,7 @@ export class Fz implements IFZ {
   }
 
   private applyBody() {
-    const body = this.options.body;
+    const body = this.config.body;
     const headers = this.requestConfig.headers!;
 
     if (body) {
@@ -274,7 +278,7 @@ export class Fz implements IFZ {
   }
 
   private applyCache() {
-    if (this.options.cache) {
+    if (this.config.cache) {
       Fz._CACHE = Fz._CACHE || new LRU();
     }
   }
@@ -294,8 +298,8 @@ export class Fz implements IFZ {
     this.hooks.afterResponse.push(af);
   }
 
-  private async request(finalOptions: any): Promise<Response> {
-    return await timeout(this.engine.call(this.engine, this.requestConfig.url, finalOptions), this.timeout);
+  private async request(finalConfig: any): Promise<Response> {
+    return await timeout(this.engine.call(this.engine, this.requestConfig.url, finalConfig), this.timeout);
   }
 
   public async response(): Promise<Response | null> {
@@ -329,16 +333,16 @@ export class Fz implements IFZ {
 
     const { headers, ...rest } = this.requestConfig;
 
-    const finalOptions = {
+    const finalConfig = {
       ...rest,
       headers: headers!.toObject(),
     };
 
     const retryPromise = this.retry(async () => {
-      let response = await this.getCachedResponse(finalOptions);
+      let response = await this.getCachedResponse(finalConfig);
 
       if (!response) {
-        response = await this.request(finalOptions);
+        response = await this.request(finalConfig);
       }
 
       if (!response.ok) {
@@ -362,7 +366,7 @@ export class Fz implements IFZ {
         );
       }
 
-      await this.setCachedResponse(finalOptions, response.clone());
+      await this.setCachedResponse(finalConfig, response.clone());
 
       await this.afterResponse(response.clone());
 
@@ -381,7 +385,7 @@ export class Fz implements IFZ {
       return await retryPromise;
     } catch (error: any) {
       if (Fz._LOADING.end) {
-        await Fz._LOADING.end(error.response, this.options);
+        await Fz._LOADING.end(error.response, this.config);
       }
 
       if (Fz._ERROR_HANDLER) {
@@ -405,7 +409,7 @@ export class Fz implements IFZ {
     })
   }
 
-  private async beforeRequest(options: Options) {
+  private async beforeRequest(options: FzConfig) {
     for (const hook of this.hooks.beforeRequest) {
       await hook(options);
     }
@@ -413,12 +417,12 @@ export class Fz implements IFZ {
 
   private async afterResponse(response: Response) {
     for (const hook of this.hooks.afterResponse) {
-      await hook(response, this.options);
+      await hook(response, this.config);
     }
   }
 
   private async getCachedResponse(options: any): Promise<Response | null> {
-    if (!this.options.cache) {
+    if (!this.config.cache) {
       return null;
     }
 
@@ -427,18 +431,18 @@ export class Fz implements IFZ {
   }
 
   private async setCachedResponse(options: any, response: Response) {
-    if (!this.options.cache) {
+    if (!this.config.cache) {
       return ;
     }
 
     const key = await this.getCachedKey(options);
 
-    if (typeof this.options.cache === 'boolean') {
+    if (typeof this.config.cache === 'boolean') {
       return Fz._CACHE.set(key, response);
     }
 
     return Fz._CACHE.set(key, response, {
-      maxAge: this.options.cache?.maxAge!,
+      maxAge: this.config.cache?.maxAge!,
     });
   }
 
@@ -458,6 +462,6 @@ export class Fz implements IFZ {
       }
     }
 
-    return af(response, this.options);
+    return af(response, this.config);
   }
 }

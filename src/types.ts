@@ -1,5 +1,6 @@
-import { HTTPError } from './utils/error';
-import { Headers } from './utils';
+import type { Agent } from 'http';
+import type { HTTPError } from './utils/error';
+import type { Headers } from './utils';
 
 export interface IFZ {
   // response
@@ -11,7 +12,7 @@ export interface IFZ {
   blob(): Promise<Blob | null>;
 }
 
-export interface Options {
+export interface FzConfig {
   url: Url;
   method?: Method;
   query?: Record<string, any>;
@@ -28,9 +29,10 @@ export interface Options {
   throwHttpErrors?: boolean;
   cache?: boolean | ICacheOptions;
   showLoading?: boolean;
+  agent?: Agent | ((parsedUrl: URL) => Agent);
 }
 
-export type RequestConfig = Omit<Options, 'headers' | 'body'> & { body?: string, headers?: Headers };
+export type RequestConfig = Omit<FzConfig, 'headers' | 'body'> & { body?: string, headers?: Headers };
 
 export interface ICacheOptions {
   maxAge?: number;
@@ -47,8 +49,8 @@ export interface Hooks {
   afterResponse: AfterResponse[]
 }
 
-export type BeforeRequest = (options: Options) => Promise<void>;
-export type AfterResponse = (response: Response, options: Options) => Promise<void>;
+export type BeforeRequest = (options: FzConfig) => Promise<void>;
+export type AfterResponse = (response: Response, options: FzConfig) => Promise<void>;
 
 export const enum ResponseTypes {
   json = 'json',

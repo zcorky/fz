@@ -1,3 +1,4 @@
+import * as http from 'http';
 import * as createTestServer from 'create-test-server';
 import fetch, { Headers } from 'node-fetch';
 
@@ -244,6 +245,11 @@ describe('node server side', () => {
     it('json', () => {
       const body = { body: 'json' };
       expect((fz.post('/', { body }) as any).requestConfig.body).toEqual(JSON.stringify(body));
+    });
+
+    it('agent', () => {
+      const agent = new http.Agent();
+      expect((fz.get('/', { agent }) as any).requestConfig.agent).toBe(agent);
     });
   });
 
