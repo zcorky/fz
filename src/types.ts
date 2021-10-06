@@ -12,6 +12,18 @@ export interface IFZ {
   blob(): Promise<Blob | null>;
 }
 
+/**
+ * Custom Response, cased by node-fetch .clone bug
+ *  See: https://github.com/node-fetch/node-fetch/issues/386
+ */
+export interface FZResponse<T = any> {
+  status: number;
+  headers: Record<string, string>;
+  data: T;
+  //
+  statusText: string;
+}
+
 export interface FzConfig {
   url: Url;
   method?: Method;
@@ -50,7 +62,7 @@ export interface Hooks {
 }
 
 export type BeforeRequest = (options: FzConfig) => Promise<void>;
-export type AfterResponse = (response: Response, options: FzConfig) => Promise<void>;
+export type AfterResponse = (response: FZResponse, options: FzConfig) => Promise<void>;
 
 export const enum ResponseTypes {
   json = 'json',

@@ -9,6 +9,7 @@ import {
   StatusCode, StatusHandler,
   ErrorHandler,
   RequestConfig,
+  FZResponse,
 } from '../types';
 import {
   fetch as DEFAULT_FETCH,
@@ -339,46 +340,60 @@ export class Fz implements IFZ {
     };
 
     const retryPromise = this.retry(async () => {
-      let response = await this.getCachedResponse(finalConfig);
-
-      if (!response) {
-        response = await this.request(finalConfig);
+      const cachedResponse = await this.getCachedResponse(finalConfig);
+      if (cachedResponse) {
+        await this.afterResponse(cachedResponse);
+        return cachedResponse;
       }
 
-      if (!response.ok) {
-        let data = {} as any;
+      const _response = await this.request(finalConfig);
+      const response: FZResponse = {
+        status: _response.status,
+        statusText: _response.statusText,
+        headers: _response.headers as any, // @TODO
+        data: null,
+      };
+
+      if (!_response.ok) {
+        response.data = await _response.text();
+
         try {
-          data = await response.clone().json();
+          response.data = JSON.parse(response.data);
         } catch (error: any) {
           //
         }
 
-        this.runStatusBeforeError(response.clone());
+        this.runStatusBeforeError(response);
 
         throw new HTTPError(
           response.status,
           {
-            code: data?.code,
-            message: data?.message,
+            code: response.data?.code,
+            message: response.data?.message,
           },
-          response.clone(),
+          response,
           this.requestConfig,
         );
       }
 
-      await this.setCachedResponse(finalConfig, response.clone());
-
-      await this.afterResponse(response.clone());
-
       if (!type) {
-        return response.clone();
+        // response.data = _response;
+
+        // return response;
+        return _response;
       }
 
       try {
-        return await (response.clone() as any)[type]();
+        response.data = await (_response as any)[type]();
       } catch (err: any) {
-        return null;
+        throw err;
       }
+
+      await this.setCachedResponse(finalConfig, response.data);
+
+      await this.afterResponse(response);
+      
+      return response.data;
     });
 
     try {
@@ -415,13 +430,13 @@ export class Fz implements IFZ {
     }
   }
 
-  private async afterResponse(response: Response) {
+  private async afterResponse(response: FZResponse) {
     for (const hook of this.hooks.afterResponse) {
       await hook(response, this.config);
     }
   }
 
-  private async getCachedResponse(options: any): Promise<Response | null> {
+  private async getCachedResponse(options: any): Promise<FZResponse | null> {
     if (!this.config.cache) {
       return null;
     }
@@ -430,7 +445,7 @@ export class Fz implements IFZ {
     return Fz._CACHE.get(key);
   }
 
-  private async setCachedResponse(options: any, response: Response) {
+  private async setCachedResponse(options: any, response: FZResponse) {
     if (!this.config.cache) {
       return ;
     }
@@ -450,7 +465,7 @@ export class Fz implements IFZ {
     return JSON.stringify(options);
   }
 
-  private async runStatusBeforeError(response: Response) {
+  private async runStatusBeforeError(response: FZResponse) {
     const _sh = Fz._STATUS;
 
     const af: AfterResponse = async (response, options) => {

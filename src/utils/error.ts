@@ -1,4 +1,4 @@
-import { RequestConfig } from '../types';
+import { FZResponse, RequestConfig } from '../types';
 
 export type ICode = string | number;
 export type IMessage = string;
@@ -24,7 +24,7 @@ export class HTTPError extends Error {
   public code: ICode;
   // public message: IMessage;
 
-  constructor(public status: number, public codeMessage: CodeMessage, public response: Response, public request: RequestConfig) {
+  constructor(public status: number, public codeMessage: CodeMessage, public response: FZResponse, public request: RequestConfig) {
     super(codeMessage.message || response.statusText);
 
     this.name = 'HTTPError';
