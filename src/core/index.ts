@@ -264,17 +264,21 @@ export class Fz implements IFZ {
     const body = this.config.body;
     const headers = this.requestConfig.headers!;
 
-    if (body) {
-      if (headers.isContentTypeJSON) {
-        this.requestConfig.body = JSON.stringify(body);
-      } else if (headers.isContentTypeUrlencoded) {
-        this.requestConfig.body = qs.stringify(body as any || {});
-      } else if (headers.isContentTypeForm) {
-        // isContentTypeForm form-data
-      } else {
-        // fallback json
-        this.requestConfig.body = JSON.stringify(body);
-      }
+    if (!body) return;
+    // already encoded
+    if (typeof body !== 'object') {
+      this.requestConfig.body = body as any as string;
+      return;
+    }
+
+    if (headers.isContentTypeJSON) {
+      this.requestConfig.body = JSON.stringify(body);
+    } else if (headers.isContentTypeUrlencoded) {
+      this.requestConfig.body = qs.stringify(body || {});
+    } else if (headers.isContentTypeForm) {
+      this.requestConfig.body = body as any;
+    } else {
+      this.requestConfig.body = body as any;
     }
   }
 
@@ -392,7 +396,7 @@ export class Fz implements IFZ {
       await this.setCachedResponse(finalConfig, response.data);
 
       await this.afterResponse(response);
-      
+
       return response.data;
     });
 
@@ -447,7 +451,7 @@ export class Fz implements IFZ {
 
   private async setCachedResponse(options: any, response: FZResponse) {
     if (!this.config.cache) {
-      return ;
+      return;
     }
 
     const key = await this.getCachedKey(options);
