@@ -274,7 +274,7 @@ export class Fz implements IFZ {
     if (headers.isContentTypeJSON) {
       this.requestConfig.body = JSON.stringify(body);
     } else if (headers.isContentTypeUrlencoded) {
-      this.requestConfig.body = qs.stringify(body || {});
+      this.requestConfig.body = qs.stringify(body as any);
     } else if (headers.isContentTypeForm) {
       this.requestConfig.body = body as any;
     } else {
