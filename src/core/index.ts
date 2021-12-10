@@ -18,6 +18,7 @@ import {
   HTTPError,
   TimeoutError,
   Headers,
+  isPlainObject,
 } from '../utils';
 
 export class Fz implements IFZ {
@@ -257,6 +258,10 @@ export class Fz implements IFZ {
     for (const key in optionHeaders) {
       // override
       headers.set(key, optionHeaders[key]);
+    }
+
+    if (isPlainObject(this.config.body)) {
+      headers.set('content-type', 'application/json');
     }
   }
 

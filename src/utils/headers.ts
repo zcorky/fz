@@ -1,4 +1,5 @@
 import defaultUserAgent from './userAgent';
+import { isPlainObject } from './isPlainObject';
 
 export type MimeType = 'application/json' | 'multipart/form-data' | 'application/x-www-form-urlencoded';
 
@@ -32,11 +33,17 @@ export class Headers {
   }
 
   public toObject() {
-    return {
+    const _ = {
       ...this._headers,
-      'content-type': this.contentType,
+      // 'content-type': this.contentType,
       'user-agent': this.userAgent,
     };
+
+    // if (this.contentType) {
+    //   _['content-type'] = this.contentType;
+    // }
+
+    return _;
   }
 
   public toJSON() {
@@ -44,7 +51,7 @@ export class Headers {
   }
 
   public get contentType(): string {
-    return this.get('content-type') || 'application/json';
+    return this.get('content-type');
   }
 
   public get isContentTypeJSON() {
@@ -72,6 +79,8 @@ export class Headers {
   }
 
   private isContentType(mimeType: MimeType) {
+    if (!this.contentType) return false;
+    
     return this.include(this.contentType, mimeType);
   }
 }
