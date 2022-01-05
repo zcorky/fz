@@ -222,7 +222,7 @@ export class Fz implements IFZ {
 
   private applyQuery() {
     const query = this.config.query;
-    if (query) {
+    if (query && Object.keys(query).length > 0) {
       // @TODO
       const index = this.requestConfig.url.indexOf('?');
       if (index !== -1) {
