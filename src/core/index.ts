@@ -260,9 +260,9 @@ export class Fz implements IFZ {
       headers.set(key, optionHeaders[key]);
     }
 
-    // if (isPlainObject(this.config.body)) {
-    //   headers.set('content-type', 'application/json');
-    // }
+    if (!headers.get('content-type') && isPlainObject(this.config.body)) {
+      headers.set('content-type', 'application/json');
+    }
   }
 
   private applyBody() {
@@ -347,6 +347,8 @@ export class Fz implements IFZ {
       ...rest,
       headers: headers!.toObject(),
     };
+
+    console.log('finalConfig:', finalConfig);
 
     const retryPromise = this.retry(async () => {
       const cachedResponse = await this.getCachedResponse(finalConfig);

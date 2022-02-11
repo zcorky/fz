@@ -54,4 +54,20 @@ describe('option.body', () => {
   //       .toEqual({ flag: 'true', flag2: 'false'  });
   //   });
   // });
+
+  it('expect x-form-url-encoded', async () => {
+    const response = await fz
+      .post('https://httpbin.zcorky.com/post', {
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'hi': 'zero'
+        },
+      })
+      .json();
+
+      expect(response.headers['content-type']).toBe('application/x-www-form-urlencoded');
+      expect(response.body.hi).toBe('zero');
+  });
 });
