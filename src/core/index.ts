@@ -260,9 +260,9 @@ export class Fz implements IFZ {
       headers.set(key, optionHeaders[key]);
     }
 
-    if (isPlainObject(this.config.body)) {
-      headers.set('content-type', 'application/json');
-    }
+    // if (isPlainObject(this.config.body)) {
+    //   headers.set('content-type', 'application/json');
+    // }
   }
 
   private applyBody() {
