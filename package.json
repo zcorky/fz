@@ -1,6 +1,6 @@
 {
   "name": "@zcorky/fz",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "A simply fetch library",
   "main": "lib/index.js",
   "repository": "https://github.com/zcorky/fz",
