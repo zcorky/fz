@@ -348,7 +348,7 @@ export class Fz implements IFZ {
       headers: headers!.toObject(),
     };
 
-    console.log('finalConfig:', finalConfig);
+    // console.log('finalConfig:', finalConfig);
 
     const retryPromise = this.retry(async () => {
       const cachedResponse = await this.getCachedResponse(finalConfig);
